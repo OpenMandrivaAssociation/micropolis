@@ -3,7 +3,7 @@
 # activity/activity.info = 7
 # src/sim/sim.c and about = 4.0
 %define version	4.0
-%define rel	1
+%define rel	2
 
 Summary:	City simulation based on Maxis SimCity
 Name:		%{name}
@@ -19,6 +19,9 @@ Patch0:		micropolis-zerfleddert.20080120.patch
 Patch1:		micropolis-path.patch
 # From debian, optflags patch:
 Patch2:		micropolis-makefile.patch
+# (Anssi 01/2008): Fix some 64bit pointer warnings. It is likely they are
+# harmless corner cases, but this code is so old I don't take any chances.
+Patch3:		micropolis-64bit-warns.patch
 License:	GPLv3+ with additional terms
 BuildRoot:	%{_tmppath}/%{name}-root
 BuildRequires:	libxpm-devel
@@ -39,6 +42,7 @@ Micropolis.
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
+%patch3 -p1
 #[ $(sed -n 's,activity_version = ,,p' activity/activity.info) = %version ]
 [ $(sed -r -n 's,^.*MicropolisVersion = "(.+)".*$,\1,p' src/sim/sim.c) = %version ]
 
