@@ -3,7 +3,7 @@
 # activity/activity.info = 7
 # src/sim/sim.c and about = 4.0
 %define version	4.0
-%define rel	2
+%define rel	3
 
 Summary:	City simulation based on Maxis SimCity
 Name:		%{name}
@@ -22,6 +22,11 @@ Patch2:		micropolis-makefile.patch
 # (Anssi 01/2008): Fix some 64bit pointer warnings. It is likely they are
 # harmless corner cases, but this code is so old I don't take any chances.
 Patch3:		micropolis-64bit-warns.patch
+# git clone git://git.zerfleddert.de/micropolis
+# cd micropolis
+# git-format-patch -o .. 06fa6a70a8ac0c94b675f748d91f968ed6c6578e
+Patch4:		0001-fix-typo-in-crime-alert.patch
+Patch5:		0002-fix-modifier-problems-like-NumLock-by-ignoring-hat.patch
 License:	GPLv3+ with additional terms
 BuildRoot:	%{_tmppath}/%{name}-root
 BuildRequires:	libxpm-devel
@@ -43,13 +48,10 @@ Micropolis.
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
+%patch4 -p1
+%patch5 -p1
 #[ $(sed -n 's,activity_version = ,,p' activity/activity.info) = %version ]
 [ $(sed -r -n 's,^.*MicropolisVersion = "(.+)".*$,\1,p' src/sim/sim.c) = %version ]
-
-cat > README.install.urpmi <<EOF
-You need to disable numlock when running Micropolis, otherwise mouse
-will not work with it.
-EOF
 
 %build
 %make OPTFLAGS="%optflags" -C src
@@ -98,7 +100,7 @@ rm -rf %{buildroot}
 
 %files
 %defattr(-,root,root)
-%doc manual/* README.install.urpmi
+%doc manual/*
 %{_gamesbindir}/%{name}
 %{_gamesdatadir}/%{name}
 %{_libdir}/%{name}
