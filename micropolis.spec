@@ -3,7 +3,7 @@
 # activity/activity.info = 7
 # src/sim/sim.c and about = 4.0
 %define version	4.0
-%define rel	3
+%define rel	4
 
 Summary:	City simulation based on Maxis SimCity
 Name:		%{name}
@@ -52,6 +52,8 @@ Micropolis.
 %patch5 -p1
 #[ $(sed -n 's,activity_version = ,,p' activity/activity.info) = %version ]
 [ $(sed -r -n 's,^.*MicropolisVersion = "(.+)".*$,\1,p' src/sim/sim.c) = %version ]
+
+perl -pi -e 's,GAMESDATADIR,%{_gamesdatadir},;s,LIBDIR,%{_libdir},' Micropolis
 
 %build
 %make OPTFLAGS="%optflags" -C src
