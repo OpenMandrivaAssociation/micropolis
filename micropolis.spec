@@ -3,7 +3,7 @@
 # activity/activity.info = 7
 # src/sim/sim.c and about = 4.0
 %define version	4.0
-%define rel	4
+%define rel	5
 
 Summary:	City simulation based on Maxis SimCity
 Name:		%{name}
@@ -33,7 +33,7 @@ BuildRequires:	libxpm-devel
 BuildRequires:	libx11-devel
 BuildRequires:	libxext-devel
 BuildRequires:	bison
-BuildRequires:	imagemagick
+BuildRequires:	ImageMagick
 # Plays audio through aplay:
 Requires:	alsa-utils
 
