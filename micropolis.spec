@@ -31,7 +31,7 @@ BuildRequires:	libxext-devel
 BuildRequires:	SDL-devel
 BuildRequires:	SDL_mixer-devel
 BuildRequires:	bison
-BuildRequires:	ImageMagick
+BuildRequires:	imagemagick
 
 %description
 City-building simulation game originally released as SimCity by
