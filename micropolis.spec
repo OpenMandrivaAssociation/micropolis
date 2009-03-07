@@ -19,6 +19,7 @@ Patch2:		micropolis-makefile.patch
 # (Anssi 01/2008): Fix some 64bit pointer warnings. It is likely they are
 # harmless corner cases, but this code is so old I don't take any chances.
 Patch3:		micropolis-64bit-warns.patch
+Patch4:		micropolis-printf-format.patch
 # Lots of fixes from
 # http://git.zerfleddert.de/cgi-bin/gitweb.cgi/micropolis
 # curl http://rmdir.de/~michael/micropolis_git.patch > micropolis-zerfleddert.$(date +%Y%m%d).patch
@@ -44,6 +45,7 @@ Micropolis.
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
+%patch4 -p1
 
 #[ $(sed -n 's,activity_version = ,,p' activity/activity.info) = %version ]
 [ $(sed -r -n 's,^.*MicropolisVersion = "(.+)".*$,\1,p' src/sim/sim.c) = %version ]
