@@ -3,7 +3,7 @@
 # activity/activity.info = 7
 # src/sim/sim.c and about = 4.0
 %define version	4.0
-%define rel	8
+%define rel	9
 
 Summary:	City simulation based on Maxis SimCity
 Name:		%{name}
