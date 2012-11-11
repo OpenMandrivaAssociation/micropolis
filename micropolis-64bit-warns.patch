@@ -1,0 +1,79 @@
+Index: micropolis-activity/src/tcl/tclcmdah.c
+===================================================================
+--- micropolis-activity/src/tcl/tclcmdah.c
++++ micropolis-activity/src/tcl/tclcmdah.c	2008-01-20 04:27:56.000000000 +0200
+@@ -886,7 +886,7 @@
+ 	    if (useTwoWords) {
+ 		sprintf(dst+dstSize, newFormat, twoWordValue);
+ 	    } else if (useShort) {
+-	        int tmp = (int)oneWordValue;
++	        long tmp = (long)oneWordValue;
+ 		sprintf(dst+dstSize, newFormat, (short)tmp);
+ 	    } else {
+ 		sprintf(dst+dstSize, newFormat, oneWordValue);
+Index: micropolis-activity/src/tk/tkargv.c
+===================================================================
+--- micropolis-activity/src/tk/tkargv.c
++++ micropolis-activity/src/tk/tkargv.c	2008-01-20 04:28:08.000000000 +0200
+@@ -178,7 +178,7 @@
+ 	infoPtr = matchPtr;
+ 	switch (infoPtr->type) {
+ 	    case TK_ARGV_CONSTANT:
+-		*((int *) infoPtr->dst) = (int) infoPtr->src;
++		*((long *) infoPtr->dst) = (long) infoPtr->src;
+ 		break;
+ 	    case TK_ARGV_INT:
+ 		if (argc == 0) {
+Index: micropolis-activity/src/tk/tkbind.c
+===================================================================
+--- micropolis-activity/src/tk/tkbind.c
++++ micropolis-activity/src/tk/tkbind.c	2008-01-20 04:29:23.000000000 +0200
+@@ -1191,7 +1191,7 @@
+ 	    string[1] = 0;
+ 	    hPtr = Tcl_FindHashEntry(&keySymTable, string);
+ 	    if (hPtr != NULL) {
+-		patPtr->detail = (int) Tcl_GetHashValue(hPtr);
++		patPtr->detail = (long) Tcl_GetHashValue(hPtr);
+ 	    } else {
+ 		if (isprint(*p)) {
+ 		    patPtr->detail = *p;
+@@ -1304,7 +1304,7 @@
+ 			    "\" for non-key event", (char *) NULL);
+ 		    return NULL;
+ 		}
+-		patPtr->detail = (int) Tcl_GetHashValue(hPtr);
++		patPtr->detail = (long) Tcl_GetHashValue(hPtr);
+ 
+ 		/*
+ 		 * Don't get upset about the shift modifier with keys:
+@@ -1779,7 +1779,7 @@
+ 				 * runs out. */
+     int spaceNeeded, cvtFlags;	/* Used to substitute string as proper Tcl
+ 				 * list element. */
+-    int number, flags;
++    long number, flags;
+ #define NUM_SIZE 40
+     register char *string;
+     char numStorage[NUM_SIZE+1];
+@@ -2026,7 +2026,7 @@
+ 		number = eventPtr->xcreatewindow.border_width;
+ 		goto doNumber;
+ 	    case 'D':
+-		number = (int) eventPtr->xany.display;
++		number = (long) eventPtr->xany.display;
+ 		goto doNumber;
+ 	    case 'E':
+ 		number = (int) eventPtr->xany.send_event;
+Index: micropolis-activity/src/sim/w_x.c
+===================================================================
+--- micropolis-activity/src/sim/w_x.c
++++ micropolis-activity/src/sim/w_x.c	2008-01-20 04:32:39.000000000 +0200
+@@ -902,7 +902,7 @@
+     }
+ 
+     view->data = (unsigned char *)shmat(view->shminfo->shmid, 0, 0);
+-    if ((int)view->data == -1) {
++    if ((long)view->data == -1) {
+       perror("shmat");
+       fprintf(stderr,
+ 	      "Darn, Micropolis can't find any memory to share with display \"%s\".\n",

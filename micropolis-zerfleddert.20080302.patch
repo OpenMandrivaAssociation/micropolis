@@ -1,0 +1,2904 @@
+diff --git a/.gitignore b/.gitignore
+new file mode 100644
+index 0000000..a6b6907
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1,19 @@
++*.o
++lib*.a
++made.tmp
++res/sim
++src/tclx/runtcl
++src/tclx/runwish
++src/tclx/src/tclxgdat.c
++src/tclx/tcl
++src/tclx/tcldef
++src/tclx/tcllib/tcl.tlb
++src/tclx/tcllib/tk.tcl
++src/tclx/tcllib/wishx.tcl
++src/tclx/tkucbsrc/main.c
++src/tclx/tkucbsrc/tkevent.c
++src/tclx/ucbsrc/tclbasic.c
++src/tclx/ucbsrc/tclexpr.c
++src/tclx/wish
++src/tk/wish
++src/sim/sim
+diff --git a/Makefile b/Makefile
+new file mode 100644
+index 0000000..3f55dcc
+--- /dev/null
++++ b/Makefile
+@@ -0,0 +1,124 @@
++PREFIX=/usr/local
++DATADIR=$(PREFIX)/share/micropolis
++LIBEXECDIR=$(PREFIX)/libexec
++BINDIR=$(PREFIX)/bin
++DOCDIR=$(PREFIX)/share/doc/micropolis
++PIXMAPDIR=$(PREFIX)/share/pixmaps
++APPLICATIONSDIR=$(PREFIX)/share/applications
++
++INSTALL=install
++
++DIRS=	$(DESTDIR)/$(DATADIR)/res/sounds $(DESTDIR)/$(DATADIR)/res/dejavu-lgc \
++	$(DESTDIR)/$(DATADIR)/images $(DESTDIR)/$(DATADIR)/cities \
++	$(DESTDIR)/$(LIBEXECDIR) $(DESTDIR)/$(BINDIR) $(DESTDIR)/$(DOCDIR) \
++	$(DESTDIR)/$(PIXMAPDIR) $(DESTDIR)/$(APPLICATIONSDIR)
++
++RES=	res/buildidx.tcl res/button.tcl res/entry.tcl res/help.tcl res/hexa.112 \
++	res/hexa.232 res/hexa.384 res/hexa.385 res/hexa.386 res/hexa.387 \
++	res/hexa.388 res/hexa.456 res/hexa.544 res/hexa.563 res/hexa.999 \
++	res/init.tcl res/listbox.tcl res/menu.tcl res/micropolis.tcl \
++	res/mkindex.tcl res/parray.tcl res/snro.111 res/snro.222 res/snro.333 \
++	res/snro.444 res/snro.555 res/snro.666 res/snro.777 res/snro.888 \
++	res/sound.tcl res/stri.202 res/stri.219 res/stri.301 res/stri.356 \
++	res/tcl.tdx res/tcl.tlb res/tclindex res/tclinit.tcl res/text.tcl \
++	res/tk.tcl res/tk.tdx res/tk.tlb res/tkerror.tcl res/wask.tcl \
++	res/wbudget.tcl res/weditor.tcl res/weval.tcl res/wfile.tcl \
++	res/wfrob.tcl res/wgraph.tcl res/whead.tcl res/whelp.tcl res/wish.tcl \
++	res/wishx.tcl res/wmap.tcl res/wnotice.tcl res/wplayer.tcl \
++	res/wscen.tcl res/wsplash.tcl
++
++all: res/sim
++
++res/sim: src/sim/sim
++	cp src/sim/sim $@
++	strip $@
++
++src/sim/sim: tcl tk tclx sim
++	@#
++
++tcl:
++	cd src/tcl && $(MAKE) MAKEFLAGS=
++
++tk:
++	cd src/tk && $(MAKE) MAKEFLAGS=
++
++tclx:
++	cd src/tclx && $(MAKE) MAKEFLAGS=
++
++sim:
++	cd src/sim && $(MAKE) MAKEFLAGS=
++
++clean: 
++	cd src/sim && $(MAKE) MAKEFLAGS= $@
++	cd src/tcl && $(MAKE) MAKEFLAGS= $@
++	cd src/tk && $(MAKE) MAKEFLAGS= $@
++	cd src/tclx && $(MAKE) MAKEFLAGS= $@
++	rm -f res/sim
++
++install: res/sim install-dirs install-bin install-res install-images \
++	install-cities install-doc install-desktop
++
++install-dirs:
++	$(INSTALL) -d $(DIRS)
++
++install-bin:
++	$(INSTALL) -m 0755 res/sim $(DESTDIR)/$(LIBEXECDIR)/sim
++	$(INSTALL) -m 0755 res/sounds/player $(DESTDIR)/$(DATADIR)/res/sounds/player
++	echo "SIMHOME=$(DATADIR); export SIMHOME" >$(DESTDIR)/$(BINDIR)/micropolis
++	echo "echo \"Starting Micropolis in \$${SIMHOME} ... \"" >>$(DESTDIR)/$(BINDIR)/micropolis
++	echo "cd $(DATADIR) && $(LIBEXECDIR)/sim \$$*" >>$(DESTDIR)/$(BINDIR)/micropolis
++	chmod 755 $(DESTDIR)/$(BINDIR)/micropolis
++
++install-res: install-res-sounds install-res-dejavu-lgc
++	for file in $(RES); do \
++		install -m 0644 $$file $(DESTDIR)/$(DATADIR)/$$file; \
++	done
++
++install-res-sounds:
++	find res/sounds -type f -name \*.wav -exec $(INSTALL) -m 0644 {} $(DESTDIR)/$(DATADIR)/res/sounds/ \;
++
++install-res-dejavu-lgc:
++	find res/dejavu-lgc -type f -exec $(INSTALL) -m 0644 {} $(DESTDIR)/$(DATADIR)/res/dejavu-lgc/ \;
++
++install-images:
++	find images -type f -exec $(INSTALL) -m 0644 {} $(DESTDIR)/$(DATADIR)/images/ \;
++
++install-cities:
++	find cities -type f -exec $(INSTALL) -m 0644 {} $(DESTDIR)/$(DATADIR)/cities/ \;
++
++install-doc:
++	find manual -type f -exec $(INSTALL) -m 0644 {} $(DESTDIR)/$(DOCDIR)/ \;
++
++install-desktop:
++	$(INSTALL) -m 0644 Micropolis.desktop $(DESTDIR)/$(APPLICATIONSDIR)/micropolis.desktop
++	$(INSTALL) -m 0644 Micropolis.png $(DESTDIR)/$(PIXMAPDIR)/micropolis.png
++
++uninstall:
++	rm -f $(DESTDIR)/$(BINDIR)/micropolis
++	rm -f $(DESTDIR)/$(LIBEXECDIR)/sim
++	-rmdir $(DESTDIR)/$(LIBEXECDIR)
++	rm -f $(DESTDIR)/$(DATADIR)/res/sounds/player
++	rm -f $(DESTDIR)/$(DATADIR)/res/sounds/*.wav
++	-rmdir $(DESTDIR)/$(DATADIR)/res/sounds
++	rm -f $(DESTDIR)/$(DATADIR)/res/dejavu-lgc/*ttf \
++		$(DESTDIR)/$(DATADIR)/res/dejavu-lgc/fonts.alias \
++		$(DESTDIR)/$(DATADIR)/res/dejavu-lgc/fonts.dir \
++		$(DESTDIR)/$(DATADIR)/res/dejavu-lgc/fonts.scale
++	-rmdir $(DESTDIR)/$(DATADIR)/res/dejavu-lgc
++	for file in $(RES); do \
++		rm $(DESTDIR)/$(DATADIR)/$$file; \
++	done
++	-rmdir $(DESTDIR)/$(DATADIR)/res
++	rm -f $(DESTDIR)/$(DATADIR)/images/*.xpm
++	-rmdir $(DESTDIR)/$(DATADIR)/images
++	rm -f $(DESTDIR)/$(DATADIR)/cities/*.cty
++	-rmdir $(DESTDIR)/$(DATADIR)/cities
++	-rmdir $(DESTDIR)/$(DATADIR)
++	rm -f $(DESTDIR)/$(DOCDIR)/*.html $(DESTDIR)/$(DOCDIR)/README
++	-rmdir $(DESTDIR)/$(DOCDIR)
++	rm -f $(DESTDIR)/$(APPLICATIONSDIR)/micropolis.desktop
++	rm -f $(DESTDIR)/$(PIXMAPDIR)/micropolis.png
++
++.PHONY: all clean install install-dirs install-bin install-res \
++	install-res-sounds install-res-dejavu-lgc install-images \
++	install-cities install-doc install-desktop uninstall tcl tk tclx sim
+diff --git a/Micropolis.desktop b/Micropolis.desktop
+new file mode 100644
+index 0000000..acab8e2
+--- /dev/null
++++ b/Micropolis.desktop
+@@ -0,0 +1,12 @@
++[Desktop Entry]
++Type=Application
++Version=1.0
++Encoding=UTF-8
++Name=Micropolis
++GenericName=Micropolis City Simulation Game
++Comment=City simulation game, open sourced from original SimCity(tm)
++Icon=micropolis.png
++Exec=micropolis
++Terminal=false
++StartupNotify=false
++Categories=Game;Simulation;
+diff --git a/res/micropolis.tcl b/res/micropolis.tcl
+index b1379c1..5704330 100644
+--- a/res/micropolis.tcl
++++ b/res/micropolis.tcl
+@@ -97,6 +97,7 @@ set DemandCom 0
+ set DemandInd 0
+ set Priority 2
+ set Time 3
++set Pause 0
+ set AutoGoto 1
+ set AutoBudget 1
+ set Disasters 1
+@@ -412,8 +413,12 @@ sim ResetDynamic
+ # the font in res (because it's already in the system fonts).  These lines
+ # are for other systems that lack the font.
+ set FontPath "[pwd]/res/dejavu-lgc"
+-system "xset -fp $FontPath >&/dev/null"
+-system "xset +fp $FontPath >&/dev/null"
++system "xset -fp \"$FontPath\" >/dev/null 2>&1"
++system "xset +fp \"$FontPath\" >/dev/null 2>&1"
++
++# Ignore SIGCHLD for spawned sound-player childs, this should lead to them
++# being reaped by init
++signal ignore SIGCHLD
+ 
+ 
+ ########################################################################
+@@ -484,7 +489,7 @@ Either clean up your act or open a gas mask concession at city hall.} \
+ {{view {PanView $v [sim PolMaxX] [sim PolMaxY]}}}
+ 
+ Message 11 #ff4f4f {CRIME ALERT!} \
+-{Crime in your city is our of hand.  Angry mobs are looting and vandalizing the central city.  The president will send in the national guard soon if you cannot control the problem.} \
++{Crime in your city is out of hand.  Angry mobs are looting and vandalizing the central city.  The president will send in the national guard soon if you cannot control the problem.} \
+ {{view {PanView $v [sim CrimeMaxX] [sim CrimeMaxY]}}}
+ 
+ Message 12 #ff4f4f {TRAFFIC WARNING!} \
+@@ -937,19 +942,11 @@ proc UISetChannelVolume {win chan vol} {
+ 
+ 
+ proc EchoPlaySound {soundspec} {
+-  # Temporary workaround to tell Python Sugar app to play sound.
+-  global Sound
+-  if {$Sound} {
+-    echo PlaySound [lindex $soundspec 0]
+-  }
+ }
+ 
+ 
+ proc UIMakeSoundOn {win chan sound {opts ""}} {
+-  # Send message to Python to play sound.
+-  EchoPlaySound $sound
+-
+-  #UIDoSoundOn $win "play $sound -replay -channel $chan $opts"
++  playsound $chan $sound $opts
+ }
+ 
+ 
+@@ -961,16 +958,8 @@ proc UIStartSoundOn {win chan sound {opts ""}} {
+ }
+ 
+ 
+-proc UIStopSoundOn {win chan sound {opts ""}} {
+-  UIDoSoundOn $win "stop $sound"
+-}
+-
+-
+ proc UIMakeSound {chan sound {opts ""}} {
+-  # Send message to Python to play sound.
+-  EchoPlaySound $sound
+-
+-  #UIDoSound "sound play $sound -replay -channel $chan $opts"
++  playsound $chan $sound $opts
+ }
+ 
+ 
+@@ -982,11 +971,6 @@ proc UIStartSound {chan sound {opts ""}} {
+ }
+ 
+ 
+-proc UIStopSound {chan sound {opts ""}} {
+-  UIDoSound "sound stop $sound"
+-}
+-
+-
+ proc SetupSoundServer {win} {
+   AddSoundServer $win
+ }
+@@ -2041,13 +2025,13 @@ proc DoFileDialog {win Message Path Pattern FileName ActionOk ActionCancel} {
+       wm withdraw $win"
+   bind $win.files.files "<Double-Button-1>" "\
+     FileSelectDouble $win %W %y $Pattern \"
+-	$ActionOk \[$win.file.file get\] \[$win.path.path get\]\""
++	$ActionOk {\[$win.file.file get\]} {\[$win.path.path get\]}\""
+   bind $win.path.path <Return> "
+     ShowFileDialog $win \[$win.path.path get\] $Pattern
+     $win.file.file cursor 0
+     focus $win.file.file"
+   bind $win.file.file <Return> "\
+-    $ActionOk \[$win.file.file get\] \[$win.path.path get]
++    $ActionOk \[$win.file.file get\] \[$win.path.path get\]
+     wm withdraw $win"
+ }
+ 
+@@ -2283,18 +2267,18 @@ proc NameComplete {win Type} {
+ 
+ proc ShowFileDialog {win Path Pattern} {
+   busy $win {
+-    set Path [lindex [split $Path] 0]
++    #set Path [lindex [split $Path] 0]
+     if {[$win.files.files size] > 0} {
+       $win.files.files delete 0 end
+     }
+     # read directory
+-    if {[catch "exec ls -F $Path" Result]} {
++    if {[catch "exec ls -F \"$Path\"" Result]} {
+       set ElementList {}
+     }
+     if {[string match $Result "* not found"]} {
+       set ElementList {}
+     }
+-    set ElementList [lsort $Result]
++    set ElementList [lsort [split $Result "\n"]]
+ 
+     # insert ..
+     if {[string compare $Path "/"]} {
+@@ -2534,7 +2518,7 @@ proc EditorToolUp {w x y} {
+ 
+   case [$w ToolState] in \
+     7 { # bulldozer
+-     UIStopSoundOn $w edit 1
++      stopdozer
+     } \
+     10 { # chalk
+       StopChalk $w
+@@ -3099,8 +3083,10 @@ proc ShowSplashOf {head} {
+ 
+ 
+ proc WithdrawSplashOf {head} {
+-  set win WindowLink $head.splash]
+-  wm withdraw $win
++  set win [WindowLink $head.splash]
++  if {$win != {}} {
++    wm withdraw $win
++  }
+ }
+ 
+ 
+@@ -3150,8 +3136,10 @@ proc ShowScenarioOf {head} {
+ 
+ 
+ proc WithdrawScenarioOf {head} {
+-  set win WindowLink $head.scenario]
+-  wm withdraw $win
++  set win [WindowLink $head.scenario]
++  if {$win != {}} {
++    wm withdraw $win
++  }
+ }
+ 
+ 
+@@ -3303,12 +3291,33 @@ proc UpdateScenarioButtonID {win id} {
+ 
+ 
+ proc UpdateScenarioButton {win data} {
++  global Messages
++
+   set type [lindex $data 0]
+   set id [lindex $data 1]
+   set over [WindowLink $win.$id.over]
+   set enabled [WindowLink $win.$id.enabled]
+   set checked [WindowLink $win.$id.checked]
+   #echo "WIN $win TYPE $type ID $id OVER $over ENABLED $enabled CHECKED $checked"
++  if {$over} {
++    if {[lindex ${data} 2] == "DoPickScenario"} {
++      catch {text $win.desc \
++      	-borderwidth 2 \
++      	-relief flat \
++      	-wrap word \
++      	-state normal \
++      	-font [Font $win Large]}
++      
++      $win.desc configure -state normal
++      $win.desc delete 0.0 end
++      $win.desc insert end "[lindex $Messages([lindex ${data} 3]) 1]\n\n[lindex $Messages([lindex ${data} 3]) 2]"
++      $win.desc configure -state disabled
++      
++      place $win.desc -x 232 -y 170 -width 280 -height 285
++    }
++  } else {
++    catch {destroy $win.desc}
++  }
+   if {$enabled} {
+     if {$checked} {
+       if {$over} {
+@@ -3542,6 +3551,10 @@ proc DoPickScenario {win param} {
+   UILoadScenario $param
+ }
+ 
++proc DeleteScenarioWindow {win} {
++  UIQuit $win
++}
++
+ 
+ ########################################################################
+ # Undo/Redo Facility
+@@ -4907,12 +4920,14 @@ proc oops {} {
+ 
+ 
+ proc TogglePause {} {
+-  global State
++  global State Pause
+ 
+   if {"$State" != "play" || [sim Speed]} {
+     sim Speed 0
++    set Pause 1
+   } else {
+     sim Speed 3
++    set Pause 0
+   }
+   MakeRunningSound
+ }
+@@ -5119,7 +5134,7 @@ proc UIDoLoadCity {name path} {
+   if {![string match *.cty $name]} {
+     set name $name.cty
+   }
+-  MakeHistory "DoLoadCity $path/$name"
++  MakeHistory "DoLoadCity {$path/$name}"
+ }
+ 
+ 
+@@ -5214,8 +5229,14 @@ proc DoLeaveGame {head} {
+ 
+ 
+ proc UILoseGame {} {
+-  UIPickScenarioMode
++  global Messages
+   UIShowPicture 200
++  sim Pause
++  AskQuestion [Color . #ff0000 #ffffff] [lindex $Messages(200) 1] \
++    [lindex $Messages(200) 2] \
++    ""\
++    ""\
++    "{Ok} SelectCity.Yes {UIPickScenarioMode}"
+ }
+ 
+ 
+diff --git a/res/sounds/a.wav b/res/sounds/a.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/aaah.wav b/res/sounds/aaah.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/airport.wav b/res/sounds/airport.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/beep.wav b/res/sounds/beep.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/boing.wav b/res/sounds/boing.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/bop.wav b/res/sounds/bop.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/build.wav b/res/sounds/build.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/bulldozer.wav b/res/sounds/bulldozer.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/chalk.wav b/res/sounds/chalk.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/coal.wav b/res/sounds/coal.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/com.wav b/res/sounds/com.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/computer.wav b/res/sounds/computer.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/cuckoo.wav b/res/sounds/cuckoo.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/e.wav b/res/sounds/e.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/eraser.wav b/res/sounds/eraser.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/explosion-hi.wav b/res/sounds/explosion-hi.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/explosion-high.wav b/res/sounds/explosion-high.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/explosion-low.wav b/res/sounds/explosion-low.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/fire.wav b/res/sounds/fire.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/heavytraffic.wav b/res/sounds/heavytraffic.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/honkhonk-hi.wav b/res/sounds/honkhonk-hi.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/honkhonk-high.wav b/res/sounds/honkhonk-high.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/honkhonk-low.wav b/res/sounds/honkhonk-low.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/honkhonk-med.wav b/res/sounds/honkhonk-med.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/ignition.wav b/res/sounds/ignition.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/ind.wav b/res/sounds/ind.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/monster.wav b/res/sounds/monster.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/nuclear.wav b/res/sounds/nuclear.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/o.wav b/res/sounds/o.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/oop.wav b/res/sounds/oop.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/park.wav b/res/sounds/park.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/player b/res/sounds/player
+new file mode 100755
+index 0000000..48e05d7
+--- /dev/null
++++ b/res/sounds/player
+@@ -0,0 +1,25 @@
++#!/bin/bash
++
++PLAYER=
++
++if type -a aplay &>/dev/null; then
++	PLAYER=aplay
++elif type -a afplay &>/dev/null; then
++	#afplay is shipped with OS X Leopard
++	PLAYER=afplay
++elif type -a play &>/dev/null; then
++	PLAYER=play
++elif type -a mplayer &>/dev/null; then
++	PLAYER="mplayer -nogui -nocache"
++fi
++
++if [ "x${PLAYER}" = "x" ]; then
++	echo "Can't find audio player!"
++	echo "Please make sure you have aplay, play or mplayer in your path."
++	if [ "`uname`" = "Darwin" ]; then
++		echo "A working play for OS X is available from:"
++		echo "http://www.hieper.nl/html/play.html"
++	fi
++else
++	exec ${PLAYER} "$@" >/dev/null 2>&1
++fi
+diff --git a/res/sounds/police.wav b/res/sounds/police.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/quack.wav b/res/sounds/quack.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/quackquack.wav b/res/sounds/quackquack.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/query.wav b/res/sounds/query.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/rail.wav b/res/sounds/rail.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/res.wav b/res/sounds/res.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/road.wav b/res/sounds/road.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/rumble.wav b/res/sounds/rumble.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/seaport.wav b/res/sounds/seaport.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/siren.wav b/res/sounds/siren.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/skid.wav b/res/sounds/skid.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/sorry.wav b/res/sounds/sorry.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/stadium.wav b/res/sounds/stadium.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/uhuh.wav b/res/sounds/uhuh.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/whip.wav b/res/sounds/whip.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/wire.wav b/res/sounds/wire.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/woosh.wav b/res/sounds/woosh.wav
+old mode 100755
+new mode 100644
+diff --git a/res/sounds/zone.wav b/res/sounds/zone.wav
+old mode 100755
+new mode 100644
+diff --git a/res/weditor.tcl b/res/weditor.tcl
+index 0d407d2..36f2571 100644
+--- a/res/weditor.tcl
++++ b/res/weditor.tcl
+@@ -120,7 +120,7 @@ if {0} {
+     -relief flat
+   tk_bindForTraversal $win.topframe.controls.update
+   bind $win.topframe.controls.update <F10> {tk_firstMenu %W} 
+-  bind $win.topframe.controls.update <Mod2-Key> {tk_traverseToMenu %W %A} 
++  bind $win.topframe.controls.update <Alt-Key> {tk_traverseToMenu %W %A} 
+   tk_menus $win $win.topframe.controls.update
+ 
+   SetHelp $win.topframe.controls.update Editor.Display
+@@ -129,7 +129,7 @@ if {0} {
+     -font [Font $win Medium]
+   tk_bindForTraversal $win.topframe.controls.update.m
+   bind $win.topframe.controls.update.m <F10> {tk_firstMenu %W} 
+-  bind $win.topframe.controls.update.m <Mod2-Key> {tk_traverseToMenu %W %A} 
++  bind $win.topframe.controls.update.m <Alt-Key> {tk_traverseToMenu %W %A} 
+     $win.topframe.controls.update.m add radiobutton\
+       -label {Always}\
+       -variable Skip.$win\
+@@ -166,7 +166,7 @@ menubutton $win.topframe.controls.options\
+   -relief flat
+ tk_bindForTraversal $win.topframe.controls.options
+ bind $win.topframe.controls.options <F10> {tk_firstMenu %W} 
+-bind $win.topframe.controls.options <Mod2-Key> {tk_traverseToMenu %W %A} 
++bind $win.topframe.controls.options <Alt-Key> {tk_traverseToMenu %W %A} 
+ tk_menus $win $win.topframe.controls.options
+ 
+ SetHelp $win.topframe.controls.options Editor.Options
+@@ -175,7 +175,7 @@ menu $win.topframe.controls.options.m\
+   -font [Font $win Medium]
+ tk_bindForTraversal $win.topframe.controls.options.m
+ bind $win.topframe.controls.options.m <F10> {tk_firstMenu %W} 
+-bind $win.topframe.controls.options.m <Mod2-Key> {tk_traverseToMenu %W %A} 
++bind $win.topframe.controls.options.m <Alt-Key> {tk_traverseToMenu %W %A} 
+ $win.topframe.controls.options.m add checkbutton\
+   -label {Auto Goto}\
+   -variable AutoGoto.$win\
+diff --git a/res/whead.tcl b/res/whead.tcl
+index d437925..5432324 100644
+--- a/res/whead.tcl
++++ b/res/whead.tcl
+@@ -78,10 +78,19 @@ global NoticePanelHeight
+ 
+ set visual [winfo screenvisual $win]
+ set depth [winfo screendepth $win]
+-#set screenwidth [winfo screenwidth $win]
+-#set screenheight [winfo screenheight $win]
+-set screenwidth 1200
+-set screenheight 900
++set screenwidth [winfo screenwidth $win]
++set screenheight [winfo screenheight $win]
++set initialwidth 1200
++set initialheight 900
++
++if {$screenwidth < $initialwidth} {
++	set initialwidth $screenwidth
++}
++
++if {$screenheight < $initialheight} {
++	set initialheight $screenheight
++}
++
+ 
+ if {!(("$visual" == "pseudocolor") ||
+       ("$visual" == "truecolor") ||
+@@ -112,15 +121,15 @@ LinkWindow $win.ask {}
+ 
+ tk_bindForTraversal $win
+ bind $win <F10> {tk_firstMenu %W} 
+-bind $win <Mod2-Key> {tk_traverseToMenu %W %A} 
++bind $win <Alt-Key> {tk_traverseToMenu %W %A} 
+ 
+ wm title $win "Micropolis Controls"
+ wm iconname $win {Micropolis Controls}
+-wm geometry $win 1200x900+0+0
++wm geometry $win ${initialwidth}x${initialheight}+0+0
+ #wm positionfrom $win user
+ wm withdraw $win
+-#wm maxsize $win $screenwidth $screenheight
+-#wm minsize $win 100 100
++wm maxsize $win $screenwidth $screenheight
++wm minsize $win 100 100
+ wm protocol $win delete "DeleteHeadWindow $win ;"
+ wm fullscreen $win on
+ 
+@@ -142,7 +151,7 @@ frame $win.col1.w1.f1\
+   -relief raised
+ tk_bindForTraversal $win.col1.w1.f1
+ bind $win.col1.w1.f1 <F10> {tk_firstMenu %W} 
+-bind $win.col1.w1.f1 <Mod2-Key> {tk_traverseToMenu %W %A} 
++bind $win.col1.w1.f1 <Alt-Key> {tk_traverseToMenu %W %A} 
+ 
+ SetHelp $win.col1.w1.f1.micropolis Head.MicropolisMenu
+ 
+@@ -153,7 +162,7 @@ menubutton $win.col1.w1.f1.micropolis\
+   -variable $win.postedMenu
+ tk_bindForTraversal $win.col1.w1.f1.micropolis
+ bind $win.col1.w1.f1.micropolis <F10> {tk_firstMenu %W} 
+-bind $win.col1.w1.f1.micropolis <Mod2-Key> {tk_traverseToMenu %W %A} 
++bind $win.col1.w1.f1.micropolis <Alt-Key> {tk_traverseToMenu %W %A} 
+ 
+ tk_menus $win $win.col1.w1.f1.micropolis
+ 
+@@ -161,7 +170,7 @@ menu $win.col1.w1.f1.micropolis.m\
+   -font [Font $win Medium]
+ tk_bindForTraversal $win.col1.w1.f1.micropolis.m
+ bind $win.col1.w1.f1.micropolis.m <F10> {tk_firstMenu %W} 
+-bind $win.col1.w1.f1.micropolis.m <Mod2-Key> {tk_traverseToMenu %W %A} 
++bind $win.col1.w1.f1.micropolis.m <Alt-Key> {tk_traverseToMenu %W %A} 
+   $win.col1.w1.f1.micropolis.m add command\
+     -label {About...}\
+     -command "UIShowPicture 300"
+@@ -192,7 +201,7 @@ menubutton $win.col1.w1.f1.options\
+   -variable $win.postedMenu
+ tk_bindForTraversal $win.col1.w1.f1.options
+ bind $win.col1.w1.f1.options <F10> {tk_firstMenu %W} 
+-bind $win.col1.w1.f1.options <Mod2-Key> {tk_traverseToMenu %W %A} 
++bind $win.col1.w1.f1.options <Alt-Key> {tk_traverseToMenu %W %A} 
+ 
+ tk_menus $win $win.col1.w1.f1.options
+ 
+@@ -200,7 +209,7 @@ menu $win.col1.w1.f1.options.m\
+   -font [Font $win Medium]
+ tk_bindForTraversal $win.col1.w1.f1.options.m
+ bind $win.col1.w1.f1.options.m <F10> {tk_firstMenu %W} 
+-bind $win.col1.w1.f1.options.m <Mod2-Key> {tk_traverseToMenu %W %A} 
++bind $win.col1.w1.f1.options.m <Alt-Key> {tk_traverseToMenu %W %A} 
+   $win.col1.w1.f1.options.m add checkbutton\
+     -label {Auto Budget}\
+     -variable AutoBudget\
+@@ -239,7 +248,7 @@ menubutton $win.col1.w1.f1.disasters\
+   -variable $win.postedMenu
+ tk_bindForTraversal $win.col1.w1.f1.disasters
+ bind $win.col1.w1.f1.disasters <F10> {tk_firstMenu %W} 
+-bind $win.col1.w1.f1.disasters <Mod2-Key> {tk_traverseToMenu %W %A} 
++bind $win.col1.w1.f1.disasters <Alt-Key> {tk_traverseToMenu %W %A} 
+ 
+ tk_menus $win $win.col1.w1.f1.disasters
+ 
+@@ -247,7 +256,7 @@ menu $win.col1.w1.f1.disasters.m\
+   -font [Font $win Medium]
+ tk_bindForTraversal $win.col1.w1.f1.disasters.m
+ bind $win.col1.w1.f1.disasters.m <F10> {tk_firstMenu %W} 
+-bind $win.col1.w1.f1.disasters.m <Mod2-Key> {tk_traverseToMenu %W %A} 
++bind $win.col1.w1.f1.disasters.m <Alt-Key> {tk_traverseToMenu %W %A} 
+   $win.col1.w1.f1.disasters.m add command\
+     -label {Monster}\
+     -command "UIDisaster $win \"UIMakeMonster\" \"release a monster?\""
+@@ -260,6 +269,11 @@ bind $win.col1.w1.f1.disasters.m <Mod2-Key> {tk_traverseToMenu %W %A}
+   $win.col1.w1.f1.disasters.m add command\
+     -label {Meltdown}\
+     -command "UIDisaster $win \"sim MakeMeltdown\" \"have a nuclear meltdown?\""
++  if {[sim HasAirCrash]} {
++    $win.col1.w1.f1.disasters.m add command\
++      -label {Air Crash}\
++      -command "UIDisaster $win \"sim MakeAirCrash\" \"crash an airplane?\""
++  }
+   $win.col1.w1.f1.disasters.m add command\
+     -label {Tornado}\
+     -command "UIDisaster $win \"sim MakeTornado\" \"spin up a tornado?\""
+@@ -276,7 +290,7 @@ menubutton $win.col1.w1.f1.priority\
+   -variable $win.postedMenu
+ tk_bindForTraversal $win.col1.w1.f1.priority
+ bind $win.col1.w1.f1.priority <F10> {tk_firstMenu %W} 
+-bind $win.col1.w1.f1.priority <Mod2-Key> {tk_traverseToMenu %W %A} 
++bind $win.col1.w1.f1.priority <Alt-Key> {tk_traverseToMenu %W %A} 
+ 
+ tk_menus $win $win.col1.w1.f1.priority
+ 
+@@ -284,7 +298,7 @@ menu $win.col1.w1.f1.priority.m\
+   -font [Font $win Medium]
+ tk_bindForTraversal $win.col1.w1.f1.priority.m
+ bind $win.col1.w1.f1.priority.m <F10> {tk_firstMenu %W} 
+-bind $win.col1.w1.f1.priority.m <Mod2-Key> {tk_traverseToMenu %W %A} 
++bind $win.col1.w1.f1.priority.m <Alt-Key> {tk_traverseToMenu %W %A} 
+   $win.col1.w1.f1.priority.m add radiobutton\
+     -label {Super Fast}\
+     -command {SetPriority 4}\
+@@ -310,6 +324,10 @@ bind $win.col1.w1.f1.priority.m <Mod2-Key> {tk_traverseToMenu %W %A}
+     -command {SetPriority 0}\
+     -value {0}\
+     -variable Priority
++  $win.col1.w1.f1.priority.m add checkbutton\
++    -label {Pause}\
++    -command {TogglePause}\
++    -variable Pause
+ 
+ SetHelp $win.col1.w1.f1.windows Head.WindowsMenu
+ 
+@@ -320,7 +338,7 @@ menubutton $win.col1.w1.f1.windows\
+   -variable $win.postedMenu
+ tk_bindForTraversal $win.col1.w1.f1.windows
+ bind $win.col1.w1.f1.windows <F10> {tk_firstMenu %W} 
+-bind $win.col1.w1.f1.windows <Mod2-Key> {tk_traverseToMenu %W %A} 
++bind $win.col1.w1.f1.windows <Alt-Key> {tk_traverseToMenu %W %A} 
+ 
+ tk_menus $win $win.col1.w1.f1.windows
+ 
+@@ -328,7 +346,7 @@ menu $win.col1.w1.f1.windows.m\
+   -font [Font $win Medium]
+ tk_bindForTraversal $win.col1.w1.f1.windows.m
+ bind $win.col1.w1.f1.windows.m <F10> {tk_firstMenu %W} 
+-bind $win.col1.w1.f1.windows.m <Mod2-Key> {tk_traverseToMenu %W %A} 
++bind $win.col1.w1.f1.windows.m <Alt-Key> {tk_traverseToMenu %W %A} 
+   $win.col1.w1.f1.windows.m add command\
+     -label {Budget}\
+     -command "UIShowBudgetAndWait"
+@@ -516,7 +534,7 @@ frame $win.col1.w1.f2.f2\
+   -relief flat
+ tk_bindForTraversal $win.col1.w1.f2.f2
+ bind $win.col1.w1.f2.f2 <F10> {tk_firstMenu %W} 
+-bind $win.col1.w1.f2.f2 <Mod2-Key> {tk_traverseToMenu %W %A} 
++bind $win.col1.w1.f2.f2 <Alt-Key> {tk_traverseToMenu %W %A} 
+ 
+ SetHelp $win.col1.w1.f2.f2 Head.Log
+ 
+@@ -558,7 +576,7 @@ if {[sim MultiPlayerMode]} {
+     -relief flat
+   tk_bindForTraversal $win.col1.w1.f2.f3
+   bind $win.col1.w1.f2.f3 <F10> {tk_firstMenu %W} 
+-  bind $win.col1.w1.f2.f3 <Mod2-Key> {tk_traverseToMenu %W %A} 
++  bind $win.col1.w1.f2.f3 <Alt-Key> {tk_traverseToMenu %W %A} 
+ 
+   button $win.col1.w1.f2.f3.chat \
+     -font [Font $win Large] \
+@@ -581,7 +599,7 @@ if {[sim MultiPlayerMode]} {
+   set $win.col1.w1.f2.f3.entry.value ""
+   tk_bindForTraversal $win.col1.w1.f2.f3.entry
+   bind $win.col1.w1.f2.f3.entry <F10> {tk_firstMenu %W} 
+-  bind $win.col1.w1.f2.f3.entry <Mod2-Key> {tk_traverseToMenu %W %A}
++  bind $win.col1.w1.f2.f3.entry <Alt-Key> {tk_traverseToMenu %W %A}
+   bind $win.col1.w1.f2.f3.entry <Return> "DoEnterMessage %W %W.value"
+   bind $win.col1.w1.f2.f3.entry <Escape> "DoEvalMessage %W %W.value"
+   bind $win.col1.w1.f2.f3.entry <Any-Enter> {focus %W}
+@@ -656,7 +674,7 @@ place configure $win.col1\
+   -x 0\
+   -y 0\
+   -width $HeadPanelWidth\
+-  -height $screenheight
++  -relheight 1.0
+ 
+ pack append $win.col1\
+     $win.col1.w1		{top frame nw fillx} \
+@@ -684,8 +702,17 @@ pack append $win.col1\
+ place configure $win.col2\
+   -x [expr "$HeadPanelWidth + 5"]\
+   -y 0\
+-  -width [expr "($screenwidth - $HeadPanelWidth) - 5"]\
+-  -height $screenheight
++  -relheight 1.0\
++  -width [expr "($screenwidth - $HeadPanelWidth) - 5"]
++
++proc resizeeditor {win width} {
++  global HeadPanelWidth
++
++  place configure $win.col2\
++    -width [expr "($width - $HeadPanelWidth) - 5"]
++}
++
++bind $win <Configure> "resizeeditor $win %w"
+ 
+ #pack append $win.col2\
+ #    $win.col2.x1		{top frame nw fillx} \
+diff --git a/res/wmap.tcl b/res/wmap.tcl
+index 73e7d6f..b497c35 100644
+--- a/res/wmap.tcl
++++ b/res/wmap.tcl
+@@ -124,7 +124,7 @@ menubutton $win.topframe.zones\
+ LinkWindow $win.zones $win.topframe.zones
+ tk_bindForTraversal $win.topframe.zones
+ bind $win.topframe.zones <F10> {tk_firstMenu %W} 
+-bind $win.topframe.zones <Mod2-Key> {tk_traverseToMenu %W %A} 
++bind $win.topframe.zones <Alt-Key> {tk_traverseToMenu %W %A} 
+ tk_menus $win $win.topframe.zones
+ 
+ SetHelp $win.topframe.zones Map.Zones
+@@ -133,7 +133,7 @@ menu $win.topframe.zones.m\
+   -font [Font $win Medium]
+ tk_bindForTraversal $win.topframe.zones.m
+ bind $win.topframe.zones.m <F10> {tk_firstMenu %W} 
+-bind $win.topframe.zones.m <Mod2-Key> {tk_traverseToMenu %W %A} 
++bind $win.topframe.zones.m <Alt-Key> {tk_traverseToMenu %W %A} 
+   $win.topframe.zones.m add radiobutton\
+     -label {All}\
+     -variable MapState.$win\
+@@ -176,7 +176,7 @@ menubutton $win.topframe.overlays\
+ LinkWindow $win.overlays $win.topframe.overlays
+ tk_bindForTraversal $win.topframe.overlays
+ bind $win.topframe.overlays <F10> {tk_firstMenu %W} 
+-bind $win.topframe.overlays <Mod2-Key> {tk_traverseToMenu %W %A} 
++bind $win.topframe.overlays <Alt-Key> {tk_traverseToMenu %W %A} 
+ tk_menus $win $win.topframe.overlays
+ 
+ SetHelp $win.topframe.overlays Map.Overlays
+@@ -185,7 +185,7 @@ menu $win.topframe.overlays.m\
+   -font [Font $win Medium]
+ tk_bindForTraversal $win.topframe.overlays.m
+ bind $win.topframe.overlays.m <F10> {tk_firstMenu %W} 
+-bind $win.topframe.overlays.m <Mod2-Key> {tk_traverseToMenu %W %A} 
++bind $win.topframe.overlays.m <Alt-Key> {tk_traverseToMenu %W %A} 
+   $win.topframe.overlays.m add radiobutton\
+     -label {Population Density}\
+     -variable MapState.$win\
+diff --git a/res/wscen.tcl b/res/wscen.tcl
+index 7b2af7d..4ccc862 100644
+--- a/res/wscen.tcl
++++ b/res/wscen.tcl
+@@ -89,7 +89,7 @@ SetHelp $win Scenario
+ canvas $win.canvas \
+   -scrollincrement 0 \
+   -borderwidth 0 \
+-  -background #000000 \
++  -background #BFBFBF \
+   -width 1200 -height 900
+ LinkWindow $win.canvas $win.canvas
+ LinkWindow $win.canvas.w $win
+diff --git a/src/sim/g_bigmap.c b/src/sim/g_bigmap.c
+index 695cd88..d70225d 100644
+--- a/src/sim/g_bigmap.c
++++ b/src/sim/g_bigmap.c
+@@ -169,6 +169,15 @@ MemDrawBeegMapRect(SimView *view, int x, int y, int w, int h)
+ #define ROW8_16(n) ROW4_16(n) ROW4_16(n+4)
+ #define ROW16_16() ROW8_16(0) ROW8_16(8)
+ 
++#define ROW1_32(n) \
++      memcpy((char *)image, (char *)mem + (4 * 16 * (n)), 4 * 16); \
++      image = (unsigned QUAD *)(((unsigned char *)image) + lineBytes);
++
++#define ROW2_32(n) ROW1_32(n) ROW1_32(n+1)
++#define ROW4_32(n) ROW2_32(n) ROW2_32(n+2)
++#define ROW8_32(n) ROW4_32(n) ROW4_32(n+4)
++#define ROW16_32() ROW8_32(0) ROW8_32(8)
++
+ 	  switch (view->x->depth) {
+ 
+ 	  case 8:
+@@ -182,6 +191,9 @@ MemDrawBeegMapRect(SimView *view, int x, int y, int w, int h)
+ 
+ 	  case 24:
+ 	  case 32:
++	    ROW16_32();
++	    break;
++
+ 	  default:
+ 	    /* XXX: handle different depths */
+ 	    break;
+diff --git a/src/sim/g_cam.c b/src/sim/g_cam.c
+index c2f1b12..139da46 100644
+--- a/src/sim/g_cam.c
++++ b/src/sim/g_cam.c
+@@ -1083,39 +1083,45 @@ cam_load_rule(Cam *cam, char *filename)
+   FILE *fp;
+   QUAD magic, neighborhood, rule_size;
+   Byte *rule;
++  int test = 1;
+ 
+   if ((fp = fopen(filename, "r")) == NULL) {
+     fprintf(stderr, "cam: Can't open rule file \"%s\"\n", filename);
+     return;
+   }
+ 
+-/* XXX: Make this byte order independent!!! */
+-
+-#if defined(MSDOS) || defined(OSF1) || defined(IS_INTEL)
+ 
+ #define SWAPQUAD(x) ((x = ((x <<24) & 0xff000000) | \
+ 			  ((x <<8)  & 0x00ff0000) | \
+ 			  ((x >>8)  & 0x0000ff00) | \
+ 			  ((x >>24) & 0x000000ff)), 0)
+ 
+-#else
+-
+-#define SWAPQUAD(x) 0
+-
+-#endif
+-
+-  if ((fread(&magic, 1, sizeof(QUAD), fp) != sizeof(QUAD)) ||
+-      SWAPQUAD(magic) ||
+-      (magic != 0xcac0cac0) ||
+-      (fread(&neighborhood, 1, sizeof(QUAD), fp) != sizeof(QUAD)) ||
+-      SWAPQUAD(neighborhood) ||
+-      (fread(&rule_size, 1, sizeof(QUAD), fp) != sizeof(QUAD)) ||
+-      SWAPQUAD(rule_size) ||
+-      ((rule = (Byte *)malloc(rule_size)) == NULL) ||
+-      (fread(rule, 1, rule_size, fp) != rule_size)) {
+-    fprintf(stderr, "cam: Bad rule file \"%s\"\n", filename);
+-    fclose(fp);
+-    return;
++/* XXX: Make this byte order independent!!! */
++  if ((*(unsigned char*) (&test))) {
++    if ((fread(&magic, 1, sizeof(QUAD), fp) != sizeof(QUAD)) ||
++        SWAPQUAD(magic) ||
++        (magic != 0xcac0cac0) ||
++        (fread(&neighborhood, 1, sizeof(QUAD), fp) != sizeof(QUAD)) ||
++        SWAPQUAD(neighborhood) ||
++        (fread(&rule_size, 1, sizeof(QUAD), fp) != sizeof(QUAD)) ||
++        SWAPQUAD(rule_size) ||
++        ((rule = (Byte *)malloc(rule_size)) == NULL) ||
++        (fread(rule, 1, rule_size, fp) != rule_size)) {
++      fprintf(stderr, "cam: Bad rule file \"%s\"\n", filename);
++      fclose(fp);
++      return;
++    }
++  } else {
++    if ((fread(&magic, 1, sizeof(QUAD), fp) != sizeof(QUAD)) ||
++        (magic != 0xcac0cac0) ||
++        (fread(&neighborhood, 1, sizeof(QUAD), fp) != sizeof(QUAD)) ||
++        (fread(&rule_size, 1, sizeof(QUAD), fp) != sizeof(QUAD)) ||
++        ((rule = (Byte *)malloc(rule_size)) == NULL) ||
++        (fread(rule, 1, rule_size, fp) != rule_size)) {
++      fprintf(stderr, "cam: Bad rule file \"%s\"\n", filename);
++      fclose(fp);
++      return;
++    }
+   }
+ 
+   fclose(fp);
+diff --git a/src/sim/g_map.c b/src/sim/g_map.c
+index 4b0fe5f..4aea2c1 100644
+--- a/src/sim/g_map.c
++++ b/src/sim/g_map.c
+@@ -219,7 +219,7 @@ drawFireRadius(SimView *view)
+   short x, y;
+ 
+   drawAll(view);
+-  for (x = 0; x < SmY; x++) {
++  for (x = 0; x < SmX; x++) {
+     for (y = 0; y < SmY; y++) {
+       maybeDrawRect(view, GetCI(FireRate[x][y]),
+ 		    x * 24, y * 24, 24, 24);
+@@ -406,25 +406,15 @@ drawRect(SimView *view, int pixel, int solid,
+ 	unsigned char *image = 
+ 	  &data[(line * y) + (x * pixelBytes)];
+ 
+-	if (solid) {
+-	  for (i = h; i > 0; i--) {
+-	    for (j = w; j > 0; j--) {
++	for (i = h; i > 0; i--) {
++	  for (j = w; j > 0; j--) {
++	    if (solid || stipple++ & 1)
+ 	      *image = pixel;
+-	      image++;
+-	    }
+-	    image += line - w;
+-	  }
+-	} else {
+-	  for (i = h; i > 0; i--) {
+-	    for (j = w; j > 0; j--) {
+-	      if (stipple++ & 1)
+-		*image = pixel;
+-	      image++;
+-	    }
+-	    if (!(w & 1))
+-	      stipple++;
+-	    image += line - w;
++	    image++;
+ 	  }
++	  if (!(w & 1))
++	    stipple++;
++	  image += line - w;
+ 	}
+       }
+       break;
+@@ -438,26 +428,22 @@ drawRect(SimView *view, int pixel, int solid,
+ 	image = 
+ 	  &data[(line * y) + x];
+ 
+-	if (solid) {
+-	  for (i = h; i > 0; i--) {
+-	    for (j = w; j > 0; j--) {
+-	      *image = pixel;
+-	      image++;
+-	    }
+-	    image += line - w;
+-	  }
+-	} else {
+-	  for (i = h; i > 0; i--) {
+-	    for (j = w; j > 0; j--) {
+-	      if (stipple++ & 1)
+-		*image = pixel;
+-	      image++;
++	for (i = h; i > 0; i--) {
++	  for (j = w; j > 0; j--) {
++	    if (solid || stipple++ & 1) {
++	      if (view->x->x_big_endian) {
++	        *image = ((pixel & 0xff) << 8) | ((pixel & 0xff00) >> 8);
++	      } else {
++	        *image = pixel;
++	      }
+ 	    }
+-	    if (!(w & 1))
+-	      stipple++;
+-	    image += line - w;
++	    image++;
+ 	  }
++	  if (!(w & 1))
++	    stipple++;
++	  image += line - w;
+ 	}
++
+       }
+       break;
+ 
+@@ -467,41 +453,39 @@ drawRect(SimView *view, int pixel, int solid,
+ 	unsigned char *data = 
+ 	  (unsigned char *)view->data;
+ 	unsigned char *image;
+-	int bitmapPad = view->x->small_tile_image->bitmap_pad;
+-	int rowBytes = view->x->small_tile_image->bytes_per_line;
+-	line = rowBytes >> 1; /* Convert from byte offset to short offset */
+ 	image = 
+-	  &data[(line * y) + x];
++	  &data[(line * y) + x * pixelBytes];
+ 
+-	if (solid) {
+-	  for (i = h; i > 0; i--) {
+-	    for (j = w; j > 0; j--) {
+-	      *(image++) = (pixel >> 0) & 0xff;
+-	      *(image++) = (pixel >> 8) & 0xff;
+-	      *(image++) = (pixel >> 16) & 0xff;
+-	      if (bitmapPad == 32) {
++	for (i = h; i > 0; i--) {
++	  for (j = w; j > 0; j--) {
++	    if (view->x->x_big_endian) {
++	      if (pixelBytes == 4) {
+ 	        image++;
+ 	      }
+-	    }
+-	    image += line - w;
+-	  }
+-	} else {
+-	  for (i = h; i > 0; i--) {
+-	    for (j = w; j > 0; j--) {
+-	      if (stipple++ & 1) {
+-		*(image++) = (pixel >> 0) & 0xff;
+-		*(image++) = (pixel >> 8) & 0xff;
+-		*(image++) = (pixel >> 16) & 0xff;
+-	        if (bitmapPad == 32) {
+-		  image++;
+-		}
++	      if (solid || stipple++ & 1) {
++	        *(image++) = (pixel >> 16) & 0xff;
++	        *(image++) = (pixel >> 8) & 0xff;
++	        *(image++) = (pixel >> 0) & 0xff;
++	      } else {
++	        image += 3;
++	      }
++	    } else {
++	      if (solid || stipple++ & 1) {
++	        *(image++) = (pixel >> 0) & 0xff;
++	        *(image++) = (pixel >> 8) & 0xff;
++	        *(image++) = (pixel >> 16) & 0xff;
++	      } else {
++	        image += 3;
++	      }
++	      if (pixelBytes == 4) {
++	        image++;
+ 	      }
+ 	    }
+-	    if (!(w & 1)) {
+-	      stipple++;
+-	    }
+-	    image += line - w;
+ 	  }
++	  if (!(w & 1)) {
++	    stipple++;
++	  }
++	  image += line - w * pixelBytes;
+ 	}
+       }
+       break;
+diff --git a/src/sim/g_smmaps.c b/src/sim/g_smmaps.c
+index ed8c075..8b5f345 100644
+--- a/src/sim/g_smmaps.c
++++ b/src/sim/g_smmaps.c
+@@ -84,63 +84,67 @@ int DynamicData[32];
+       if (tile >= TILE_COUNT) tile -= TILE_COUNT;
+ 
+ 
+-#if defined(MSDOS) || defined(OSF1) || defined(IS_INTEL)
+-
+-#define ROW1_8(n) \
++#define LE_ROW1_8(n) \
+       l = mem[n]; \
+       image[0] = l; \
+       image[1] = l >>8; \
+       image[2] = l >>16; \
+       image += lineBytes;
+ 
+-#define ROW1_16(n) \
++#define LE_ROW1_16(n) \
+       memcpy((char *)image, ((char *)mem) + (n * 4 * 2), (3 * 2)); \
+       image += lineBytes;
+ 
+-#define ROW1_24(n) \
++#define LE_ROW1_24(n) \
+       memcpy((char *)image, ((char *)mem) + (n * 4 * 3), (3 * 3)); \
+       image += lineBytes;
+ 
+-#define ROW1_32(n) \
++#define LE_ROW1_32(n) \
+       memcpy((char *)image, ((char *)mem) + (n * 4 * 4), (3 * 4)); \
+       image += lineBytes;
+ 
+-#else
+-
+-#define ROW1_8(n) \
++#define BE_ROW1_8(n) \
+       l = mem[n]; \
+       image[0] = l >>24; \
+       image[1] = l >>16; \
+       image[2] = l >>8; \
+       image += lineBytes;
+ 
+-#define ROW1_16(n) \
++#define BE_ROW1_16(n) \
+       l = mem[n]; /* XXX: WRONG. handle depth */ \
+       image[0] = l >>24; \
+       image[1] = l >>16; \
+       image[2] = l >>8; \
+       image += lineBytes;
+ 
+-#define ROW1_24(n) \
++#define BE_ROW1_24(n) \
+       l = mem[n]; /* XXX: WRONG. handle depth */ \
+       image[0] = l >>24; \
+       image[1] = l >>16; \
+       image[2] = l >>8; \
+       image += lineBytes;
+ 
+-#define ROW1_32(n) \
++#define BE_ROW1_32(n) \
+       l = mem[n]; /* XXX: WRONG. handle depth */ \
+       image[0] = l >>24; \
+       image[1] = l >>16; \
+       image[2] = l >>8; \
+       image += lineBytes;
+ 
+-#endif
++#define LE_ROW3_8 LE_ROW1_8(0) LE_ROW1_8(1) LE_ROW1_8(2)
++#define LE_ROW3_16 LE_ROW1_16(0) LE_ROW1_16(1) LE_ROW1_16(2)
++#define LE_ROW3_24 LE_ROW1_24(0) LE_ROW1_24(1) LE_ROW1_24(2)
++#define LE_ROW3_32 LE_ROW1_32(0) LE_ROW1_32(1) LE_ROW1_32(2)
+ 
+-#define ROW3_8 ROW1_8(0) ROW1_8(1) ROW1_8(2)
+-#define ROW3_16 ROW1_16(0) ROW1_16(1) ROW1_16(2)
+-#define ROW3_24 ROW1_24(0) ROW1_24(1) ROW1_24(2)
+-#define ROW3_32 ROW1_32(0) ROW1_32(1) ROW1_32(2)
++#define BE_ROW3_8 BE_ROW1_8(0) BE_ROW1_8(1) BE_ROW1_8(2)
++#define BE_ROW3_16 BE_ROW1_16(0) BE_ROW1_16(1) BE_ROW1_16(2)
++#define BE_ROW3_24 BE_ROW1_24(0) BE_ROW1_24(1) BE_ROW1_24(2)
++#define BE_ROW3_32 BE_ROW1_32(0) BE_ROW1_32(1) BE_ROW1_32(2)
++
++#define ROW3_8 if (view->x->needs_swap) { BE_ROW3_8 } else { LE_ROW3_8 }
++#define ROW3_16 LE_ROW3_16
++#define ROW3_24 LE_ROW3_24
++#define ROW3_32 LE_ROW3_32
+ 
+ #define ROW3 \
+ 	  switch (view->x->depth) { \
+@@ -153,8 +157,6 @@ int DynamicData[32];
+ 		  ROW3_16 \
+ 		  break; \
+ 		case 24: \
+-		  ROW3_24 \
+-		  break; \
+ 		case 32: \
+ 		  ROW3_32 \
+ 		  break; \
+@@ -293,14 +295,26 @@ void drawPower(SimView *view)
+ 		case 16:
+ 		  { 
+ 			unsigned short *p;
+-			p = (short *)image;
+-			p[0] = p[1] = p[2] = pix;
++			p = (unsigned short *)image;
++			if (view->x->x_big_endian) {
++			  p[0] = p[1] = p[2] = ((pix & 0xff) << 8) | ((pix & 0xff00) >> 8);
++			} else {
++			  p[0] = p[1] = p[2] = pix;
++			}
+ 			image += lineBytes;
+-			p = (short *)image;
+-			p[0] = p[1] = p[2] = pix;
++			p = (unsigned short *)image;
++			if (view->x->x_big_endian) {
++			  p[0] = p[1] = p[2] = ((pix & 0xff) << 8) | ((pix & 0xff00) >> 8);
++			} else {
++			  p[0] = p[1] = p[2] = pix;
++			}
+ 			image += lineBytes;
+-			p = (short *)image;
+-			p[0] = p[1] = p[2] = pix;
++			p = (unsigned short *)image;
++			if (view->x->x_big_endian) {
++			  p[0] = p[1] = p[2] = ((pix & 0xff) << 8) | ((pix & 0xff00) >> 8);
++			} else {
++			  p[0] = p[1] = p[2] = pix;
++			}
+ 			image += lineBytes;
+ 		  }
+ 		  break;
+@@ -313,12 +327,21 @@ void drawPower(SimView *view)
+ 			  unsigned char *img =
+ 				image;
+ 			  for (x = 0; x < 4; x++) {
+-				*(img++) = (pix >> 0) & 0xff;
+-				*(img++) = (pix >> 8) & 0xff;
+-				*(img++) = (pix >> 16) & 0xff;
+-				if (pixelBytes == 4) {
+-				  img++;
+-				} // if
++			  	if (view->x->x_big_endian) {
++				  if (pixelBytes == 4) {
++				    img++;
++				  } // if
++				  *(img++) = (pix >> 16) & 0xff;
++				  *(img++) = (pix >> 8) & 0xff;
++				  *(img++) = (pix >> 0) & 0xff;
++				} else {
++				  *(img++) = (pix >> 0) & 0xff;
++				  *(img++) = (pix >> 8) & 0xff;
++				  *(img++) = (pix >> 16) & 0xff;
++				  if (pixelBytes == 4) {
++				    img++;
++				  } // if
++				}
+ 			  } // for x
+ 			  image += lineBytes;
+ 			} // for y
+diff --git a/src/sim/headers/sim.h b/src/sim/headers/sim.h
+index d6a31a1..7ecd002 100644
+--- a/src/sim/headers/sim.h
++++ b/src/sim/headers/sim.h
+@@ -91,7 +91,6 @@
+ #include <assert.h>
+ #include <ctype.h>
+ #include <setjmp.h>
+-#include <malloc.h>
+ #include <errno.h>
+ #include <signal.h>
+ #include <math.h>
+@@ -103,16 +102,13 @@
+ #include <sys/ioctl.h>
+ #include <sys/resource.h>
+ #ifndef MSDOS
+-#ifndef HPUX
+-#include <alloca.h>
+-#endif
+ #include <sys/mman.h>
+ #include <netinet/in.h>
+ #include <arpa/inet.h>
+ #endif
+ 
+ #ifdef sun
+-#ifdef SOLARIS2
++#ifdef __SVR4
+ #include <sys/systeminfo.h>
+ #else
+ #include <sys/vadvise.h>
+diff --git a/src/sim/headers/view.h b/src/sim/headers/view.h
+index 39931a5..744e0b3 100644
+--- a/src/sim/headers/view.h
++++ b/src/sim/headers/view.h
+@@ -113,6 +113,8 @@ typedef struct XDisplay {
+   Pixmap vert_stipple;
+   Pixmap horiz_stipple;
+   Pixmap diag_stipple;
++  int needs_swap;
++  int x_big_endian;
+ } XDisplay;
+ 
+ 
+diff --git a/src/sim/makefile b/src/sim/makefile
+index 3497eb2..7e4dd05 100644
+--- a/src/sim/makefile
++++ b/src/sim/makefile
+@@ -5,17 +5,21 @@ TCLXHOME = ../tclx
+ TCLLIBRARY = /usr/local/lib/tcl
+ TKLIBRARY = /usr/local/lib/tk
+ 
++SDLINCLUDE = $$(/bin/sh ./sdl_helper cflags)
++SDLLIBS = $$(/bin/sh ./sdl_helper libs)
++
+ CC = gcc
+ 
+ OPTFLAGS = -O3
+ #OPTFLAGS = -g
+ 
+-#DEFINES = -DIS_LINUX -DIS_INTEL -DCAM -DNET
+-DEFINES = -DIS_LINUX -DIS_INTEL
++#DEFINES = -DIS_LINUX -DCAM -DNET
++DEFINES = -DIS_LINUX -DNO_AIRCRASH
+ 
+-CFLAGS = $(OPTFLAGS) $(DEFINES)
++CFLAGS += $(OPTFLAGS) $(DEFINES)
+ 
+ #LDFLAGS = -Bstatic
++LDFLAGS=-L/usr/X11/lib -L/usr/X11R6/lib
+ 
+ INSTALL = install -s
+ 
+@@ -25,7 +29,8 @@ INCLUDES = \
+ 	-I$(XINCLUDE) \
+ 	-I$(TCLHOME) \
+ 	-I$(TCLXHOME)/src \
+-	-I$(TKHOME)
++	-I$(TKHOME) \
++	$(SDLINCLUDE)
+ 
+ CPPFLAGS = $(INCLUDES)
+ 
+@@ -34,7 +39,8 @@ LIBS =	$(TCLXHOME)/libtk.a \
+ 	-lm \
+         -lX11 \
+         -lXext \
+-	-lXpm
++	-lXpm \
++	$(SDLLIBS)
+ 
+ SRCS = \
+ 	sim.c \
+@@ -96,7 +102,7 @@ all: sim
+ lint:
+ 	alint $(INCLUDES) $(SRCS) > LINT
+ 
+-sim: $(ALLOBJS)
++sim: $(ALLOBJS) $(TCLXHOME)/libtk.a $(TCLXHOME)/libtcl.a
+ 	$(CC) $(CFLAGS) $(LDFLAGS) $(INCLUDES) $(ALLOBJS) $(LIBS) -o sim
+ 
+ clean:
+diff --git a/src/sim/s_disast.c b/src/sim/s_disast.c
+index 691e4f3..384e152 100644
+--- a/src/sim/s_disast.c
++++ b/src/sim/s_disast.c
+@@ -97,6 +97,7 @@ DoDisasters(void)
+       MakeFlood();
+       break;
+     case 4:
++      MakeAirCrash();
+       break;
+     case 5:
+       MakeTornado();
+diff --git a/src/sim/s_fileio.c b/src/sim/s_fileio.c
+index 3768f01..37637f7 100644
+--- a/src/sim/s_fileio.c
++++ b/src/sim/s_fileio.c
+@@ -62,17 +62,19 @@
+ #include "sim.h"
+ 
+ 
+-#if defined(MSDOS) || defined(OSF1) || defined(IS_INTEL)
+-
+ #define SWAP_SHORTS(a,b)	_swap_shorts(a,b)
+ #define SWAP_LONGS(a,b)		_swap_longs(a,b)
+ #define HALF_SWAP_LONGS(a,b)	_half_swap_longs(a,b)
+ 
++#define NOOP_ON_BE	{ int test = 1; if (!(*(unsigned char*) (&test))) return; }
++
+ static void
+ _swap_shorts(short *buf, int len)
+ {
+   int i;
+ 
++  NOOP_ON_BE;
++
+   /* Flip bytes in each short! */
+   for (i = 0; i < len; i++) {	
+     *buf = ((*buf & 0xFF) <<8) | ((*buf &0xFF00) >>8);
+@@ -85,6 +87,8 @@ _swap_longs(long *buf, int len)
+ {
+   int i;
+ 
++  NOOP_ON_BE;
++
+   /* Flip bytes in each long! */
+   for (i = 0; i < len; i++) {	
+     long l = *buf;
+@@ -102,6 +106,8 @@ _half_swap_longs(long *buf, int len)
+ {
+   int i;
+ 
++  NOOP_ON_BE
++
+   /* Flip bytes in each long! */
+   for (i = 0; i < len; i++) {	
+     long l = *buf;
+@@ -112,15 +118,6 @@ _half_swap_longs(long *buf, int len)
+   }
+ }
+ 
+-#else
+-
+-#define SWAP_SHORTS(a, b)
+-#define SWAP_LONGS(a, b)
+-#define HALF_SWAP_LONGS(a, b)
+-
+-#endif
+-
+-
+ static int
+ _load_short(short *buf, int len, FILE *f)
+ {
+diff --git a/src/sim/s_msg.c b/src/sim/s_msg.c
+index 330f125..d820607 100644
+--- a/src/sim/s_msg.c
++++ b/src/sim/s_msg.c
+@@ -340,7 +340,7 @@ doMessage(void)
+       MakeSound("city", "Siren");
+       break;
+     case  21:
+-      MakeSound("city", "Monster -speed [MonsterSpeed]");
++      MakeSound("city", "Monster");
+       break;
+     case 30:
+       MakeSound("city", "Explosion-Low");
+diff --git a/src/sim/sdl_helper b/src/sim/sdl_helper
+new file mode 100644
+index 0000000..c0dfdb8
+--- /dev/null
++++ b/src/sim/sdl_helper
+@@ -0,0 +1,46 @@
++SDLINCLUDE="`pkg-config --cflags sdl 2>/dev/null`"
++SDLLIBS="`pkg-config --libs sdl 2>/dev/null`"
++
++found=0
++
++if echo '#include <SDL_mixer.h>'|(cpp ${SDLINCLUDE}) >/dev/null 2>&1; then
++	found=1
++else
++	for flag in ${SDLINCLUDE}; do
++		if echo "${flag}" | grep '^-I' >/dev/null 2>&1; then
++			sdlpath="$(echo "${flag}"| sed -e 's/^-I//')"
++			if [ -f "${sdlpath}/SDL_mixer.h" ]; then
++				found=1
++				break
++			fi
++		fi
++	done
++fi
++
++if [ "${found}" = "1" ]; then
++	SDLINCLUDE="${SDLINCLUDE} -DWITH_SDL_MIXER"
++	SDLLIBS="${SDLLIBS} -lSDL_mixer"
++else
++	found=0
++
++	for sdlpath in /usr /usr/local /opt/local /opt/csw /sw; do
++		if [ -f "${sdlpath}/include/SDL/SDL_mixer.h" ]; then
++			SDLINCLUDE="${SDLINCLUDE} -I${sdlpath}/include/SDL -DWITH_SDL_MIXER"
++			SDLLIBS="${SDLLIBS} -L${sdlpath}/lib -lSDL -lSDL_mixer"
++
++			found=1
++			break
++		fi
++	done
++
++	if [ "${found}" = "0" ]; then
++		SDLINCLUDE=""
++		SDLLIBS=""
++	fi
++fi
++
++if [ "${1}" = "cflags" ]; then
++	echo "${SDLINCLUDE}"
++elif [ "${1}" = "libs" ]; then
++	echo "${SDLLIBS}"
++fi
+diff --git a/src/sim/w_resrc.c b/src/sim/w_resrc.c
+index 2446694..89e7538 100644
+--- a/src/sim/w_resrc.c
++++ b/src/sim/w_resrc.c
+@@ -71,7 +71,7 @@
+ #endif
+ 
+ 
+-char *HomeDir, *ResourceDir, *KeyDir, *HostName;
++char *HomeDir, *ResourceDir, *KeyDir, *HostName = "";
+ 
+ struct Resource *Resources = NULL;
+ 
+diff --git a/src/sim/w_sim.c b/src/sim/w_sim.c
+index 71f2f1a..c256e1e 100644
+--- a/src/sim/w_sim.c
++++ b/src/sim/w_sim.c
+@@ -145,6 +145,7 @@ SIMCMD_CALL(StartBulldozer)
+ SIMCMD_CALL(StopBulldozer)
+ SIMCMD_CALL(MakeFire)
+ SIMCMD_CALL(MakeFlood)
++SIMCMD_CALL(MakeAirCrash)
+ SIMCMD_CALL(MakeTornado)
+ SIMCMD_CALL(MakeEarthquake)
+ SIMCMD_CALL(MakeMonster)
+@@ -1511,6 +1512,22 @@ int SimCmdSugarMode(ARGS)
+   return (TCL_OK);
+ }
+ 
++int SimCmdHasAirCrash(ARGS)
++{
++  int aircrash = 0;
++
++  if (argc != 2) {
++    return (TCL_ERROR);
++  }
++
++#ifndef NO_AIRCRASH
++  aircrash = 1;
++#endif
++
++  sprintf(interp->result, "%d", aircrash);
++  return (TCL_OK);
++}
++
+ 
+ /************************************************************************/
+ 
+@@ -1567,6 +1584,7 @@ sim_command_init()
+   SIM_CMD(StopBulldozer);
+   SIM_CMD(MakeFire);
+   SIM_CMD(MakeFlood);
++  SIM_CMD(MakeAirCrash);
+   SIM_CMD(MakeTornado);
+   SIM_CMD(MakeEarthquake);
+   SIM_CMD(MakeMonster);
+@@ -1674,4 +1692,5 @@ sim_command_init()
+   SIM_CMD(NeedRest);
+   SIM_CMD(MultiPlayerMode);
+   SIM_CMD(SugarMode);
++  SIM_CMD(HasAirCrash);
+ }
+diff --git a/src/sim/w_sound.c b/src/sim/w_sound.c
+index b9b323c..7558e47 100644
+--- a/src/sim/w_sound.c
++++ b/src/sim/w_sound.c
+@@ -1,3 +1,7 @@
++/* 
++ * Portions Copyright (c) 2008 Deanna Phillips <deanna@sdf.lonestar.org>
++ */
++
+ /* w_sound.c
+  *
+  * Micropolis, Unix Version.  This game was released for the Unix platform
+@@ -59,103 +63,314 @@
+  * CONSUMER, SO SOME OR ALL OF THE ABOVE EXCLUSIONS AND LIMITATIONS MAY
+  * NOT APPLY TO YOU.
+  */
++#ifdef WITH_SDL_MIXER
++#include "SDL.h"
++#include "SDL_mixer.h"
++#endif
++
+ #include "sim.h"
+ 
+ 
++#define SIM_NSOUNDS	47
++#define SIM_NCHANNELS	32
++#define DOZER_CHANNEL	0
++#define DOZER_SOUND	"rumble.wav"
++
++struct sound {
++  char *id;
++  char *file;
++#ifdef WITH_SDL_MIXER
++  Mix_Chunk *wave;
++#else
++  void *wave;
++#endif
++};
++
++struct sound sounds[SIM_NSOUNDS] = {
++  { "A",		"a.wav",		NULL },
++  { "Aaah",		"aaah.wav",		NULL },
++  { "Airport",		"airport.wav",		NULL },
++  { "Beep",		"beep.wav",		NULL },
++  { "Boing",		"boing.wav",		NULL },
++  { "Bop",		"bop.wav",		NULL },
++  { "Build",		"build.wav",		NULL },
++  { "Bulldozer",	"bulldozer.wav",	NULL },
++  { "Chalk",		"chalk.wav",		NULL },
++  { "Coal",		"coal.wav",		NULL },
++  { "Com",		"com.wav",		NULL },
++  { "Computer",		"computer.wav",		NULL },
++  { "Cuckoo",		"cuckoo.wav",		NULL },
++  { "E",		"e.wav",		NULL },
++  { "Eraser",		"eraser.wav",		NULL },
++  { "Explosion-High",	"explosion-high.wav",	NULL },
++  { "Explosion-Low",	"explosion-low.wav",	NULL },
++  { "Fire",		"fire.wav",		NULL },
++  { "HeavyTraffic",	"heavytraffic.wav",	NULL },
++  { "HonkHonk-High",	"honkhonk-high.wav",	NULL },
++  { "HonkHonk-Low",	"honkhonk-low.wav",	NULL },
++  { "HonkHonk-Med",	"honkhonk-med.wav",	NULL },
++  { "Ignition",		"ignition.wav",		NULL },
++  { "Ind",		"ind.wav",		NULL },
++  { "Monster",		"monster.wav",		NULL },
++  { "Nuclear",		"nuclear.wav",		NULL },
++  { "O",		"o.wav",		NULL },
++  { "Oop",		"oop.wav",		NULL },
++  { "Park",		"park.wav",		NULL },
++  { "Player",		"player.wav",		NULL },
++  { "Police",		"police.wav",		NULL },
++  { "QuackQuack",	"quackquack.wav",	NULL },
++  { "Query",		"query.wav",		NULL },
++  { "Rail",		"rail.wav",		NULL },
++  { "Res",		"res.wav",		NULL },
++  { "Road",		"road.wav",		NULL },
++  { "Rumble",		"rumble.wav",		NULL },
++  { "Seaport",		"seaport.wav",		NULL },
++  { "Siren",		"siren.wav",		NULL },
++  { "Skid",		"skid.wav",		NULL },
++  { "Sorry",		"sorry.wav",		NULL },
++  { "Stadium",		"stadium.wav",		NULL },
++  { "UhUh",		"uhuh.wav",		NULL },
++  { "Whip",		"whip.wav",		NULL },
++  { "Wire",		"wire.wav",		NULL },
++  { "Woosh",		"woosh.wav",		NULL },
++  { "Zone",		"zone.wav",		NULL }
++};
++
++static int SoundInitialized = 0;
++
++#ifdef WITH_SDL_MIXER
+ /* Sound routines */
+ 
+ 
+-int SoundInitialized = 0;
+-short Dozing;
++Mix_Chunk *rumble;
+ 
+ 
+ InitializeSound()
+ {
+-  char cmd[256];
++  int reserved_chans;
++  char buf[256];
+ 
+-  SoundInitialized = 1;
++  if (SDL_Init(SDL_INIT_AUDIO) == -1) {
++    fprintf(stderr, "SDL_Init: %s\n", SDL_GetError());
++    return;
++  }
+ 
+-  if (!UserSoundOn) return;
++  if (Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 1, 1024) == -1) {
++    fprintf(stderr, "Mix_OpenAudio: %s\n", Mix_GetError());
++    return;
++  }
++
++  reserved_chans = Mix_ReserveChannels(1);
++
++  if (reserved_chans != 1) {
++    fprintf(stderr, "Mix_ReserveChannels: %s\n", Mix_GetError());
++    return;
++  }
++
++  if (Mix_AllocateChannels(SIM_NCHANNELS) == -1) {
++    fprintf(stderr, "Mix_AllocateChannels: %s\n", Mix_GetError());
++    return;
++  }
++
++  snprintf(buf, sizeof(buf), "%s/sounds/%s", ResourceDir, DOZER_SOUND);
++  rumble = Mix_LoadWAV(buf);
++
++  if (rumble == NULL) {
++    printf("Mix_LoadWAV: %s\n", Mix_GetError());
++    return;
++  }
+ 
+-  Eval("UIInitializeSound");
++  SoundInitialized = 1;
+ }
+ 
+ 
+ ShutDownSound()
+ {
+-  if (SoundInitialized) {
+-    SoundInitialized = 0;
+-    Eval("UIShutDownSound");
++  int i;
++  SoundInitialized = 0;
++
++  for (i = 0; i < SIM_NSOUNDS; i++) {
++    if (sounds[i].wave) {
++      Mix_FreeChunk(sounds[i].wave);
++      sounds[i].wave = NULL;
++    }
++  }
++  if (rumble) {
++    Mix_FreeChunk(rumble);
++    rumble = NULL;
+   }
++  Mix_CloseAudio();
++  SDL_Quit();
+ }
+ 
+ 
+ MakeSound(char *channel, char *id)
+ {
+   char buf[256];
++  int i;
+ 
+   if (!UserSoundOn) return;
+-  if (!SoundInitialized) InitializeSound();
++  if (!SoundInitialized) return;
+ 
+-  sprintf(buf, "UIMakeSound \"%s\" \"%s\"", channel, id);
+-  Eval(buf);
+-}
++  for (i = 0; i < SIM_NSOUNDS; i++) {
++    if (!strcmp(sounds[i].id, id))
++      break;
++  }
++  
++  if (sounds[i].wave) {
++    if (Mix_PlayChannel(-1, sounds[i].wave, 0) == -1)
++      fprintf(stderr, "Mix_PlayChannel: %s\n", Mix_GetError());
++    return;
++  }
+ 
++  snprintf(buf, sizeof(buf), "%s/sounds/%s", ResourceDir,
++	   sounds[i].file);
+ 
+-MakeSoundOn(SimView *view, char *channel, char *id)
++  sounds[i].wave = Mix_LoadWAV(buf);
++
++  if (sounds[i].wave == NULL) {
++    fprintf(stderr, "Mix_LoadWAV: %s\n", Mix_GetError());
++    return;
++  }
++
++  if (Mix_PlayChannel(-1, sounds[i].wave, 0) == -1)
++    fprintf(stderr, "Mix_PlayChannel: %s\n", Mix_GetError());
++}
++
++StartBulldozer(void)
+ {
+-  char buf[256];
++  if (!UserSoundOn) return;
++  if (!SoundInitialized) return;
+ 
++  if (Mix_PlayChannel(DOZER_CHANNEL, rumble, 4) == -1) {
++    printf("Mix_PlayChannel: %s\n", Mix_GetError());
++    return;
++  }
++}
++
++
++StopBulldozer(void)
++{
+   if (!UserSoundOn) return;
+-  if (!SoundInitialized) InitializeSound();
++  if (!SoundInitialized) return;
++
++  Mix_HaltChannel(DOZER_CHANNEL);
++}
+ 
+-  sprintf(buf, "UIMakeSoundOn %s \"%s\" \"%s\"",
+-	  Tk_PathName(view->tkwin), channel, id);
+-  Eval(buf);
++#else /* WITH_SDL_MIXER */
++InitializeSound()
++{
++  SoundInitialized = 1;
+ }
+ 
++ShutDownSound()
++{
++  SoundInitialized = 0;
++}
+ 
+-StartBulldozer(void)
++MakeSound(char *channel, char *id)
+ {
++  char filename[256], player[256];
++  static struct timeval last = {0, 0};
++  struct timeval now;
++  unsigned int diff;
++  int i;
++  pid_t pid;
++
++  gettimeofday(&now, NULL);
++
++  diff = ((now.tv_sec - last.tv_sec) * 1000000) +
++    (now.tv_usec - last.tv_usec);
++  
++  if (diff < 100000)
++    return;
++
++  last = now;
++
+   if (!UserSoundOn) return;
+-  if (!SoundInitialized) InitializeSound();
+-  if (!Dozing) {
+-    DoStartSound("edit", "1");
+-    Dozing = 1;
++  if (!SoundInitialized) return;
++
++  for (i = 0; i < SIM_NSOUNDS; i++) {
++    if (!strcmp(sounds[i].id, id))
++      break;
++  }
++ 
++  snprintf(filename, sizeof(filename), "%s/sounds/%s", ResourceDir,
++	   sounds[i].file);
++
++  snprintf(player, sizeof(player), "%s/sounds/player", ResourceDir);
++
++  pid = fork();
++
++  switch(pid) {
++    case 0:
++      execl(player, player, filename, NULL);
++      exit(1);
++      break;
++    case -1:
++      perror("fork failed");
++      break;
++    default:
++      break;
+   }
+ }
+ 
++StartBulldozer(void)
++{
++  MakeSound(0, "Rumble");
++}
+ 
+ StopBulldozer(void)
+ {
+-  if ((!UserSoundOn) || (!SoundInitialized)) return;
+-  DoStopSound("1");
+-  Dozing = 0;
++}
++#endif
++
++
++MakeSoundOn(SimView *view, char *channel, char *id)
++{
++  if (!UserSoundOn) return;
++  if (!SoundInitialized) return;
++
++  MakeSound(channel, id);
+ }
+ 
+ 
+-/* comefrom: doKeyEvent */
++/* XXX comefrom: doKeyEvent */
+ SoundOff(void)
+ {
+-  if (!SoundInitialized) InitializeSound();
+-  Eval("UISoundOff");
+-  Dozing = 0;
++  ShutDownSound();
+ }
+ 
+ 
+ DoStartSound(char *channel, char *id)
+ {
+-  char buf[256];
++  MakeSound(channel, id);
++}
+ 
+-  sprintf(buf, "UIStartSound %s %s", channel, id);
+-  Eval(buf);
++DoStopSound(char *id)
++{
++  StopBulldozer();
+ }
+ 
++SoundCmd(CLIENT_ARGS)
++{
++  if (!strcmp(argv[2], "Rumble"))
++    StartBulldozer();
++  else
++    MakeSound(NULL, argv[2]);
++  return 0;
++}
+ 
+-DoStopSound(char *id)
++DozerCmd(CLIENT_ARGS)
+ {
+-  char buf[256];
++  StopBulldozer();
++  return 0;
++}
+ 
+-  sprintf(buf, "UIStopSound %s", id);
+-  Eval(buf);
++sound_command_init()
++{
++  Tcl_CreateCommand(tk_mainInterp, "playsound", SoundCmd,
++		    (ClientData)NULL, (void (*)()) NULL);
++  Tcl_CreateCommand(tk_mainInterp, "stopdozer", DozerCmd,
++		    (ClientData)NULL, (void (*)()) NULL);
+ }
+diff --git a/src/sim/w_sprite.c b/src/sim/w_sprite.c
+index 22688e5..7ecc045 100644
+--- a/src/sim/w_sprite.c
++++ b/src/sim/w_sprite.c
+@@ -849,7 +849,7 @@ DoShipSprite(SimSprite *sprite)
+     if ((Rand16() & 3) == 1) {
+       if ((ScenarioID == 2) && /* San Francisco */
+ 	  (Rand(10) < 5)) {
+-	MakeSound("city", "HonkHonk-Low -speed 80");
++	MakeSound("city", "HonkHonk-Low");
+       } else {
+ 	MakeSound("city", "HonkHonk-Low");
+       }
+@@ -898,11 +898,13 @@ DoShipSprite(SimSprite *sprite)
+     sprite->frame = 0;
+     return;
+   }
+-  for (z = 0; z < 8; z++) {
+-    if (t == BtClrTab[z]) break;
+-    if (z == 7) {
+-      ExplodeSprite(sprite);
+-      Destroy(sprite->x + 48, sprite->y);
++  if (!NoDisasters) {
++    for (z = 0; z < 8; z++) {
++      if (t == BtClrTab[z]) break;
++      if (z == 7) {
++        ExplodeSprite(sprite);
++        Destroy(sprite->x + 48, sprite->y);
++      }
+     }
+   }
+ }
+@@ -983,7 +985,7 @@ DoMonsterSprite(SimSprite *sprite)
+ 	  else z = ND2[d];
+ 	  d = 4;
+ 	  if (!sprite->sound_count) {
+-	    MakeSound("city", "Monster -speed [MonsterSpeed]"); /* monster */
++	    MakeSound("city", "Monster"); /* monster */
+ 	    sprite->sound_count = 50 + Rand(100);
+ 	  }
+ 	}
+@@ -1588,6 +1590,23 @@ GeneratePlane(int x, int y)
+ }
+ 
+ 
++MakeAirCrash(void)
++{
++#ifndef NO_AIRCRASH
++  if (GetSprite(AIR) == NULL) {
++    short x, y;
++
++    x = Rand(WORLD_X - 20) + 10;
++    y = Rand(WORLD_Y - 10) + 5;
++
++    GeneratePlane(x, y);
++  }
++
++  ExplodeSprite(GetSprite(AIR));
++#endif
++}
++
++
+ MakeTornado(void)
+ {
+   short x, y;
+diff --git a/src/sim/w_tk.c b/src/sim/w_tk.c
+index 2a380b3..08c16f9 100644
+--- a/src/sim/w_tk.c
++++ b/src/sim/w_tk.c
+@@ -475,8 +475,8 @@ TileViewEventProc(ClientData clientData, XEvent *eventPtr)
+ /* XXX: redraw all views showing cursor */
+ /* XXX: also, make sure switching tools works w/out moving */
+     if (((view->tool_showing != last_showing) ||
+-	 (view->tool_x != last_x) ||
+-	 (view->tool_y != last_y))) {
++        ((view->tool_x >> 4) != (last_x >> 4)) ||
++        ((view->tool_y >> 4)  != (last_y >> 4)))) {
+ #if 1
+       EventuallyRedrawView(view);
+ #else
+@@ -774,6 +774,7 @@ tk_main()
+   graph_command_init();
+   date_command_init();
+   sprite_command_init();
++  sound_command_init();
+ 
+ #ifdef CAM
+   cam_command_init();
+@@ -819,7 +820,7 @@ tk_main()
+ 
+   Tk_MainLoop();
+ 
+-  sim_exit(0); // Just sets tkMustExit and ExitReturn
++  sim_really_exit(0);
+ 
+  bail:
+ 
+diff --git a/src/sim/w_x.c b/src/sim/w_x.c
+index a6472a0..ef42536 100644
+--- a/src/sim/w_x.c
++++ b/src/sim/w_x.c
+@@ -327,28 +327,43 @@ FindXDisplay(Tk_Window tkwin)
+ 	      color->pixel; \
+ 	    break; \
+ 	  case 15: \
++	    if (xd->visual->red_mask == 0x7c00) { \
+ 	    xd->pixels[i] = \
+ 	      (((color->red >> (8 + 3)) & 0x1f) << (5 + 5)) | \
+ 	      (((color->green >> (8 + 2)) & 0x1f) << (5)) | \
+ 	      (((color->blue >> (8 + 3)) & 0x1f) << (0)); \
++	    } else { \
++	      (((color->blue >> (8 + 3)) & 0x1f) << (5 + 5)) | \
++	      (((color->green >> (8 + 2)) & 0x1f) << (5)) | \
++	      (((color->red >> (8 + 3)) & 0x1f) << (0)); \
++	    } \
+ 	    break; \
+ 	  case 16: \
++	    if (xd->visual->red_mask == 0xf800) { \
+ 	    xd->pixels[i] = \
+ 	      (((color->red >> (8 + 3)) & 0x1f) << (6 + 5)) | \
+ 	      (((color->green >> (8 + 2)) & 0x3f) << (5)) | \
+ 	      (((color->blue >> (8 + 3)) & 0x1f) << (0)); \
++	    } else { \
++	    xd->pixels[i] = \
++	      (((color->blue >> (8 + 3)) & 0x1f) << (6 + 5)) | \
++	      (((color->green >> (8 + 2)) & 0x3f) << (5)) | \
++	      (((color->red >> (8 + 3)) & 0x1f) << (0)); \
++	    } \
+ 	    break; \
+ 	  case 24: \
++	  case 32: \
++	    if (xd->visual->red_mask == 0xff0000) { \
+ 	    xd->pixels[i] = \
+ 	      ((color->red & 0xff) << 16) | \
+ 	      ((color->green & 0xff) << 8) | \
+ 	      ((color->blue & 0xff) << 0); \
+-	    break; \
+-	  case 32: \
++	    } else { \
+ 	    xd->pixels[i] = \
+-	      ((color->red & 0xff) << 16) | \
++	      ((color->blue & 0xff) << 16) | \
+ 	      ((color->green & 0xff) << 8) | \
+-	      ((color->blue & 0xff) << 0); \
++	      ((color->red & 0xff) << 0); \
++	    } \
+ 	    break; \
+ 	  } \
+ 	} \
+@@ -488,6 +503,7 @@ SimView *
+ InitNewView(SimView *view, char *title, int class, int w, int h)
+ {
+   int type, i;
++  int test = 1;
+   int d = 8;
+   unsigned long valuemask = 0;
+   char *t;
+@@ -582,6 +598,10 @@ InitNewView(SimView *view, char *title, int class, int w, int h)
+     view->type = X_Mem_View;
+   }
+ 
++  view->x->needs_swap = !(*(unsigned char*) (&test));
++  view->x->x_big_endian = (ImageByteOrder(view->x->dpy) == MSBFirst);
++
++
+   GetPixmaps(view->x);
+   view->pixels = view->x->pixels;
+ 
+@@ -591,8 +611,6 @@ InitNewView(SimView *view, char *title, int class, int w, int h)
+   view->pan_x = w / 2; view->pan_y = h / 2;
+   DoResizeView(view, w, h);
+ 
+-  GetViewTiles(view);
+-
+   return (view);
+ }
+ 
+@@ -1138,7 +1156,7 @@ DoResizeView(SimView *view, int w, int h)
+ 	  view->pixel_bytes = 2;
+ 	  view->depth = 15;
+ 	  bitmap_pad = 16;
+-	  bitmap_depth = 16;
++	  bitmap_depth = 15;
+ 	  view->line_bytes8 =
+ 	    ((view->m_width * view->pixel_bytes) + 3) & (~3);
+ 	  break;
+@@ -1156,7 +1174,7 @@ DoResizeView(SimView *view, int w, int h)
+ 	  view->pixel_bytes = 4;
+ 	  //view->pixel_bytes = 3;
+ 	  view->depth = 24;
+-	  bitmap_depth = 32;
++	  bitmap_depth = 24;
+ 	  bitmap_pad = 32;
+ 	  view->line_bytes8 =
+ 	    ((view->m_width * 4) + 3) & (~3);
+@@ -1224,6 +1242,9 @@ DoResizeView(SimView *view, int w, int h)
+       }
+     }
+   }
++
++  GetViewTiles(view);
++
+ }
+ 
+ 
+diff --git a/src/tcl/tclenv.c b/src/tcl/tclenv.c
+index 656ca53..be330e1 100644
+--- a/src/tcl/tclenv.c
++++ b/src/tcl/tclenv.c
+@@ -1,7 +1,7 @@
+ /* 
+  * tclEnv.c --
+  *
+- *	Tcl support for environment variables, including a setenv
++ *	Tcl support for environment variables, including a setenv_tcl
+  *	procedure.
+  *
+  * Copyright 1991 Regents of the University of California
+@@ -57,13 +57,8 @@ static char *		EnvTraceProc _ANSI_ARGS_((ClientData clientData,
+ 			    int flags));
+ static int		FindVariable _ANSI_ARGS_((char *name, int *lengthPtr));
+ 
+-#ifdef IS_LINUX
+-int			setenv _ANSI_ARGS_((const char *name, const char *value, int replace));
+-int			unsetenv _ANSI_ARGS_((const char *name));
+-#else
+-void			setenv _ANSI_ARGS_((char *name, char *value));
+-void			unsetenv _ANSI_ARGS_((char *name));
+-#endif
++void			setenv_tcl _ANSI_ARGS_((char *name, char *value));
++int			unsetenv_tcl _ANSI_ARGS_((char *name));
+ 
+ 
+ /*
+@@ -188,7 +183,7 @@ FindVariable(name, lengthPtr)
+ /*
+  *----------------------------------------------------------------------
+  *
+- * setenv --
++ * setenv_tcl --
+  *
+  *	Set an environment variable, replacing an existing value
+  *	or creating a new variable if there doesn't exist a variable
+@@ -204,20 +199,11 @@ FindVariable(name, lengthPtr)
+  *----------------------------------------------------------------------
+  */
+ 
+-#ifdef IS_LINUX
+-int
+-setenv(name, value, replace)
+-    const char *name;		/* Name of variable whose value is to be
+-				 * set. */
+-    const char *value;		/* New value for variable. */
+-    int replace;
+-#else
+ void
+-setenv(name, value)
++setenv_tcl(name, value)
+     char *name;			/* Name of variable whose value is to be
+ 				 * set. */
+     char *value;		/* New value for variable. */
+-#endif
+ {
+     int index, length, nameLength;
+     char *p;
+@@ -272,17 +258,12 @@ setenv(name, value)
+     for (eiPtr= firstInterpPtr; eiPtr != NULL; eiPtr = eiPtr->nextPtr) {
+ 	(void) Tcl_SetVar2(eiPtr->interp, "env", (char *)name, p+1, TCL_GLOBAL_ONLY);
+     }
+-
+-#ifdef IS_LINUX
+-    return 0;
+-#endif
+-
+ }
+ 
+ /*
+  *----------------------------------------------------------------------
+  *
+- * unsetenv --
++ * unsetenv_tcl --
+  *
+  *	Remove an environment variable, updating the "env" arrays
+  *	in all interpreters managed by us.
+@@ -297,12 +278,8 @@ setenv(name, value)
+  */
+ 
+ int
+-unsetenv(name)
+-#ifdef IS_LINUX
+-    const char *name;			/* Name of variable to remove. */
+-#else
++unsetenv_tcl(name)
+     char *name;			/* Name of variable to remove. */
+-#endif
+ {
+     int index, dummy;
+     char **envPtr;
+@@ -402,15 +379,15 @@ EnvTraceProc(clientData, interp, name1, name2, flags)
+     }
+ 
+     /*
+-     * If a value is being set, call setenv to do all of the work.
++     * If a value is being set, call setenv_tcl to do all of the work.
+      */
+ 
+     if (flags & TCL_TRACE_WRITES) {
+-	setenv(name2, Tcl_GetVar2(interp, "env", name2, TCL_GLOBAL_ONLY), 0);
++	setenv_tcl(name2, Tcl_GetVar2(interp, "env", name2, TCL_GLOBAL_ONLY));
+     }
+ 
+     if (flags & TCL_TRACE_UNSETS) {
+-	unsetenv(name2);
++	unsetenv_tcl(name2);
+     }
+     return NULL;
+ }
+diff --git a/src/tcl/tclunix.h b/src/tcl/tclunix.h
+index a4c5cab..daa298c 100644
+--- a/src/tcl/tclunix.h
++++ b/src/tcl/tclunix.h
+@@ -101,7 +101,7 @@
+  */
+ 
+ extern int errno;
+-extern int sys_nerr;
++//extern int sys_nerr;
+ //#ifndef IS_LINUX
+ //extern char *sys_errlist[];
+ //#endif
+diff --git a/src/tclx/ossupp/makefile b/src/tclx/ossupp/makefile
+index a01156f..5c2ebba 100644
+--- a/src/tclx/ossupp/makefile
++++ b/src/tclx/ossupp/makefile
+@@ -30,7 +30,7 @@ CFLAGS=$(OPTIMIZE_FLAG) $(XCFLAGS) -I../$(TCL_UCB_DIR) $(MEM_DEBUG_FLAGS) \
+ all: made.tmp
+ 
+ made.tmp: $(SUPPORT_OBJS)
+-	$(AR) cr ../libtcl.a $(SUPPORT_OBJS)
++	#$(AR) cr ../libtcl.a $(SUPPORT_OBJS)
+ 	touch made.tmp
+ 
+ #------------------------------------------------------------------------------
+diff --git a/src/tclx/src/tclxgdat.y b/src/tclx/src/tclxgdat.y
+index 6957537..e29d7ea 100644
+--- a/src/tclx/src/tclxgdat.y
++++ b/src/tclx/src/tclxgdat.y
+@@ -64,78 +64,78 @@
+ timedate:               /* empty */
+         | timedate item;
+ 
+-item:   tspec =
++item:   tspec 
+                 {timeflag++;}
+-        | zone =
++        | zone 
+                 {zoneflag++;}
+-        | dtspec =
++        | dtspec 
+                 {dateflag++;}
+-        | dyspec =
++        | dyspec 
+                 {dayflag++;}
+-        | rspec =
++        | rspec 
+                 {relflag++;}
+         | nspec;
+ 
+-nspec:  NUMBER =
++nspec:  NUMBER 
+                 {if (timeflag && dateflag && !relflag) year = $1;
+                 else {timeflag++;hh = $1/100;mm = $1%100;ss = 0;merid = 24;}};
+ 
+-tspec:  NUMBER MERIDIAN =
++tspec:  NUMBER MERIDIAN
+                 {hh = $1; mm = 0; ss = 0; merid = $2;}
+-        | NUMBER ':' NUMBER =
++        | NUMBER ':' NUMBER
+                 {hh = $1; mm = $3; merid = 24;}
+-        | NUMBER ':' NUMBER MERIDIAN =
++        | NUMBER ':' NUMBER MERIDIAN
+                 {hh = $1; mm = $3; merid = $4;}
+-        | NUMBER ':' NUMBER NUMBER =
++        | NUMBER ':' NUMBER NUMBER
+                 {hh = $1; mm = $3; merid = 24;
+                 dayLight = STANDARD; ourzone = -($4%100 + 60*$4/100);}
+-        | NUMBER ':' NUMBER ':' NUMBER =
++        | NUMBER ':' NUMBER ':' NUMBER
+                 {hh = $1; mm = $3; ss = $5; merid = 24;}
+-        | NUMBER ':' NUMBER ':' NUMBER MERIDIAN =
++        | NUMBER ':' NUMBER ':' NUMBER MERIDIAN
+                 {hh = $1; mm = $3; ss = $5; merid = $6;}
+-        | NUMBER ':' NUMBER ':' NUMBER NUMBER =
++        | NUMBER ':' NUMBER ':' NUMBER NUMBER
+                 {hh = $1; mm = $3; ss = $5; merid = 24;
+                 dayLight = STANDARD; ourzone = -($6%100 + 60*$6/100);};
+ 
+-zone:   ZONE =
++zone:   ZONE
+                 {ourzone = $1; dayLight = STANDARD;}
+-        | DAYZONE =
++        | DAYZONE
+                 {ourzone = $1; dayLight = DAYLIGHT;};
+ 
+-dyspec: DAY =
++dyspec: DAY
+                 {dayord = 1; dayreq = $1;}
+-        | DAY ',' =
++        | DAY ','
+                 {dayord = 1; dayreq = $1;}
+-        | NUMBER DAY =
++        | NUMBER DAY
+                 {dayord = $1; dayreq = $2;};
+ 
+-dtspec: NUMBER '/' NUMBER =
++dtspec: NUMBER '/' NUMBER
+                 {month = $1; day = $3;}
+-        | NUMBER '/' NUMBER '/' NUMBER =
++        | NUMBER '/' NUMBER '/' NUMBER
+                 {month = $1; day = $3; year = $5;}
+-        | MONTH NUMBER =
++        | MONTH NUMBER
+                 {month = $1; day = $2;}
+-        | MONTH NUMBER ',' NUMBER =
++        | MONTH NUMBER ',' NUMBER
+                 {month = $1; day = $2; year = $4;}
+-        | NUMBER MONTH =
++        | NUMBER MONTH
+                 {month = $2; day = $1;}
+-        | NUMBER MONTH NUMBER =
++        | NUMBER MONTH NUMBER
+                 {month = $2; day = $1; year = $3;};
+ 
+ 
+-rspec:  NUMBER UNIT =
++rspec:  NUMBER UNIT
+                 {relsec +=  60L * $1 * $2;}
+-        | NUMBER MUNIT =
++        | NUMBER MUNIT
+                 {relmonth += $1 * $2;}
+-        | NUMBER SUNIT =
++        | NUMBER SUNIT
+                 {relsec += $1;}
+-        | UNIT =
++        | UNIT
+                 {relsec +=  60L * $1;}
+-        | MUNIT =
++        | MUNIT
+                 {relmonth += $1;}
+-        | SUNIT =
++        | SUNIT
+                 {relsec++;}
+-        | rspec AGO =
++        | rspec AGO
+                 {relsec = -relsec; relmonth = -relmonth;};
+ %%
+ 
+@@ -228,7 +228,7 @@ time_t daylcorr(future, now) time_t future, now;
+ 
+ static char *lptr;
+ 
+-static
++//static
+ yylex()
+ {
+ #ifndef YYSTYPE
+diff --git a/src/tclx/src/tclxid.c b/src/tclx/src/tclxid.c
+index b23d7bb..730c4ef 100644
+--- a/src/tclx/src/tclxid.c
++++ b/src/tclx/src/tclxid.c
+@@ -239,7 +239,7 @@ Tcl_IdCmd (clientData, interp, argc, argv)
+                                   " process group [set]", (char *) NULL);
+                 return TCL_ERROR;
+             }
+-            setpgrp ();
++            setpgid(getpid(), getpid());
+             return TCL_OK;
+         }
+         Tcl_AppendResult (interp, tclXWrongArgs, argv [0], 
+diff --git a/src/tclx/src/tclxint.h b/src/tclx/src/tclxint.h
+index 6a1dfee..5cacb48 100644
+--- a/src/tclx/src/tclxint.h
++++ b/src/tclx/src/tclxint.h
+@@ -67,7 +67,10 @@
+ #    include <sys/times.h>
+ #endif 
+ 
+-#include <values.h>
++//#include "values.h"
++#include <limits.h>
++#include <float.h>
++#define MAXDOUBLE       DBL_MAX
+ #include <grp.h>
+ /*
+  * On some systems this is not included by tclUnix.h.
+diff --git a/src/tk/tkbind.c b/src/tk/tkbind.c
+index 1aa2614..d32d8c9 100644
+--- a/src/tk/tkbind.c
++++ b/src/tk/tkbind.c
+@@ -229,11 +229,11 @@ static ModInfo modArray[] = {
+     "Button5",		Button5Mask,	0,
+     "Mod1",		Mod1Mask,	0,
+     "M1",		Mod1Mask,	0,
+-    "Meta",		Mod1Mask,	0,
+-    "M",		Mod1Mask,	0,
++    "Meta",		META_MASK,	0,
++    "M",		META_MASK,	0,
+     "Mod2",		Mod2Mask,	0,
+     "M2",		Mod2Mask,	0,
+-    "Alt",		Mod2Mask,	0,
++    "Alt",		ALT_MASK,	0,
+     "Mod3",		Mod3Mask,	0,
+     "M3",		Mod3Mask,	0,
+     "Mod4",		Mod4Mask,	0,
+@@ -383,8 +383,8 @@ static PatSeq *		FindSequence _ANSI_ARGS_((Tcl_Interp *interp,
+ static char *		GetField _ANSI_ARGS_((char *p, char *copy, int size));
+ static KeySym		GetKeySym _ANSI_ARGS_((TkDisplay *dispPtr,
+ 			    XEvent *eventPtr));
+-static PatSeq *		MatchPatterns _ANSI_ARGS_((BindingTable *bindPtr,
+-			    PatSeq *psPtr));
++static PatSeq *		MatchPatterns _ANSI_ARGS_((TkDisplay *dispPtr,
++			    BindingTable *bindPtr, PatSeq *psPtr));
+ 
+ /*
+  *--------------------------------------------------------------
+@@ -1034,14 +1034,14 @@ Tk_BindEvent(bindingTable, eventPtr, tkwin, numObjects, objectPtr)
+ 	key.detail = detail;
+ 	hPtr = Tcl_FindHashEntry(&bindPtr->patternTable, (char *) &key);
+ 	if (hPtr != NULL) {
+-	    matchPtr = MatchPatterns(bindPtr,
++	    matchPtr = MatchPatterns(dispPtr, bindPtr,
+ 		    (PatSeq *) Tcl_GetHashValue(hPtr));
+ 	}
+ 	if ((detail != 0) && (matchPtr == NULL)) {
+ 	    key.detail = 0;
+ 	    hPtr = Tcl_FindHashEntry(&bindPtr->patternTable, (char *) &key);
+ 	    if (hPtr != NULL) {
+-		matchPtr = MatchPatterns(bindPtr,
++		matchPtr = MatchPatterns(dispPtr, bindPtr,
+ 			(PatSeq *) Tcl_GetHashValue(hPtr));
+ 	    }
+ 	}
+@@ -1576,7 +1576,8 @@ GetKeySym(dispPtr, eventPtr)
+  */
+ 
+ static PatSeq *
+-MatchPatterns(bindPtr, psPtr)
++MatchPatterns(dispPtr, bindPtr, psPtr)
++    TkDisplay *dispPtr;
+     BindingTable *bindPtr;	/* Information about binding table, such
+ 				 * as ring of recent events. */
+     register PatSeq *psPtr;	/* List of pattern sequences. */
+@@ -1609,9 +1610,6 @@ MatchPatterns(bindPtr, psPtr)
+ 	    if (ringCount <= 0) {
+ 		goto nextSequence;
+ 	    }
+-	    if (eventPtr->xany.window != window) {
+-		goto nextSequence;
+-	    }
+ 	    if (eventPtr->xany.type != patPtr->eventType) {
+ 		/*
+ 		 * If the event is a mouse motion, button release,
+@@ -1624,11 +1622,16 @@ MatchPatterns(bindPtr, psPtr)
+ 			|| (eventPtr->xany.type == ButtonRelease)
+ 			|| (eventPtr->xany.type == KeyRelease)
+ 			|| (eventPtr->xany.type == NoExpose)
++			|| (eventPtr->xany.type == EnterNotify)
++			|| (eventPtr->xany.type == LeaveNotify)
+ 			|| (eventPtr->xany.type == GraphicsExpose)) {
+ 		    goto nextEvent;
+ 		}
+ 		goto nextSequence;
+ 	    }
++	    if (eventPtr->xany.window != window) {
++		goto nextSequence;
++	    }
+ 
+ 	    flags = flagArray[eventPtr->type];
+ 	    if (flags & KEY_BUTTON_MOTION) {
+@@ -1638,13 +1641,58 @@ MatchPatterns(bindPtr, psPtr)
+ 	    } else {
+ 		state = 0;
+ 	    }
+-	    if ((state & patPtr->needMods)
+-		    != patPtr->needMods) {
+-		goto nextSequence;
++	    if (patPtr->needMods != 0) {
++	        int modMask = patPtr->needMods;
++
++		if (!dispPtr->metaModMask && !dispPtr->altModMask && !dispPtr->modeModMask) {
++			int i, max;
++			XModifierKeymap *modMapPtr;
++			KeyCode *codePtr;
++			KeySym keysym;
++
++			modMapPtr = XGetModifierMapping(dispPtr->display);
++			codePtr = modMapPtr->modifiermap;
++			max = 8*modMapPtr->max_keypermod;
++
++			for (i = 0; i < max; i++, codePtr++) {
++				if (*codePtr == 0) {
++					continue;
++				}
++				keysym = XKeycodeToKeysym(dispPtr->display, *codePtr, 0);
++				if (keysym == XK_Mode_switch) {
++					dispPtr->modeModMask |= ShiftMask << (i/modMapPtr->max_keypermod);
++				}
++				if ((keysym == XK_Meta_L) || (keysym == XK_Meta_R)) {
++					dispPtr->metaModMask |= ShiftMask << (i/modMapPtr->max_keypermod);
++				}
++				if ((keysym == XK_Alt_L) || (keysym == XK_Alt_R)) {
++					dispPtr->altModMask |= ShiftMask << (i/modMapPtr->max_keypermod);
++				}
++			}
++		}
++	        if ((modMask & META_MASK) && (dispPtr->metaModMask != 0)) {
++	                modMask = (modMask & ~META_MASK) | dispPtr->metaModMask;
++	        }
++	        if ((modMask & ALT_MASK) && (dispPtr->altModMask != 0)) {
++	                modMask = (modMask & ~ALT_MASK) | dispPtr->altModMask;
++	        }
++
++	        if ((state & META_MASK) && (dispPtr->metaModMask != 0)) {
++	                state = (state & ~META_MASK) | dispPtr->metaModMask;
++	        }
++	        if ((state & ALT_MASK) && (dispPtr->altModMask != 0)) {
++	                state = (state & ~ALT_MASK) | dispPtr->altModMask;
++	        }
++
++	        if ((state & modMask) != modMask) {
++	                goto nextSequence;
++	        }
+ 	    }
++#if 0
+ 	    if ((state & patPtr->hateMods) != 0) {
+ 		goto nextSequence;
+ 	    }
++#endif
+ 	    if ((patPtr->detail != 0)
+ 		    && (patPtr->detail != *detailPtr)) {
+ 		goto nextSequence;
+diff --git a/src/tk/tkcanvas.c b/src/tk/tkcanvas.c
+index 653988c..90a9619 100644
+--- a/src/tk/tkcanvas.c
++++ b/src/tk/tkcanvas.c
+@@ -1488,7 +1488,7 @@ ConfigureCanvas(interp, canvasPtr, argc, argv, flags)
+ 
+ #if defined(USE_XPM3)
+ //#include "xpmtk.h"
+-#include <xpm.h>
++#include <X11/xpm.h>
+ /*
+  *--------------------------------------------------------------
+  *
+diff --git a/src/tk/tkcolor.c b/src/tk/tkcolor.c
+index 7a7e835..4e95c80 100644
+--- a/src/tk/tkcolor.c
++++ b/src/tk/tkcolor.c
+@@ -484,42 +484,67 @@ Tk_VisInfo(Screen *screen)
+ #else
+ 	scrnum = Tk_IndexOfScreen(screen);
+ 	vTemplate.screen = scrnum;
+-	vTemplate.depth = 8;
+-	vTemplate.class = PseudoColor;
++	vTemplate.class = TrueColor;
+ 	visualList =
+ 	  XGetVisualInfo(DisplayOfScreen(screen),
+ 			 VisualScreenMask |
+-			 VisualDepthMask |
+ 			 VisualClassMask,
+ 			 &vTemplate, &visualsMatched);
+-	if (visualsMatched > 0) {
+-	    info->visual = visualList[0].visual;
+-	    info->depth = 8;
+-	    info->pixmap = XCreatePixmap(screen->display,
+-					 RootWindowOfScreen(screen),
+-					 1, 1, 8);
+-//fprintf(stderr, "TK_CreateColormap %d\n", TK_CreateColormap);
+-	    if ((TK_CreateColormap == 0) &&
+-		(info->visual == DefaultVisualOfScreen(screen))) {
+-	      info->colormap = DefaultColormapOfScreen(screen);
+-	      info->gc = DefaultGCOfScreen(screen);
+-	    } else {
+-	      info->colormap =
+-		XCreateColormap(screen->display,
+-				RootWindowOfScreen(screen),
+-				info->visual, AllocNone);
+-	      info->gc =
+-		XCreateGC(screen->display,
+-			  info->pixmap, 0, &values);
+-	    }
+-	} else {
++	info->visual = NULL;
++
++	if (visualList != NULL) {
++	  int i;
++	  for (i = 0; i < visualsMatched; i++) {
++	      if (visualList[i].depth > 24)
++		continue; /* Most likely broken */
++
++	      info->visual = visualList[i].visual;
++	      info->depth = visualList[i].depth;
++
++	      break;
++	  }
++	}
++
++	if (info->visual == NULL) {
+ 	    info->visual = XDefaultVisualOfScreen(screen);
+ 	    info->depth = XDefaultDepthOfScreen(screen);
+-	    info->pixmap = XCreatePixmap(screen->display,
+-					 RootWindowOfScreen(screen),
+-					 1, 1, info->depth);
+ 	    info->colormap = XDefaultColormapOfScreen(screen);
+ 	    info->gc = DefaultGCOfScreen(screen);
++
++	    if (info->depth == 8) {
++	      vTemplate.screen = scrnum;
++	      vTemplate.class = PseudoColor;
++	      vTemplate.depth = 8;
++	      visualList = XGetVisualInfo(DisplayOfScreen(screen),
++	      		VisualScreenMask |
++			VisualDepthMask |
++			VisualClassMask,
++			&vTemplate, &visualsMatched);
++
++	      if (visualsMatched > 0) {
++	          info->visual = visualList[0].visual;
++	          info->depth = visualList[0].depth;
++
++	      }
++	    }
++	}
++
++	info->pixmap = XCreatePixmap(screen->display,
++				 RootWindowOfScreen(screen),
++				 1, 1, info->depth);
++	
++	if ((TK_CreateColormap == 0) &&
++	    (info->visual == DefaultVisualOfScreen(screen))) {
++	  info->colormap = DefaultColormapOfScreen(screen);
++	  info->gc = DefaultGCOfScreen(screen);
++	} else {
++	  info->colormap =
++	     XCreateColormap(screen->display,
++	     	RootWindowOfScreen(screen),
++	     	info->visual, AllocNone);
++	  info->gc =
++	     XCreateGC(screen->display,
++	       info->pixmap, 0, &values);
+ 	}
+ 
+ 	XFree((char *)visualList);
+diff --git a/src/tk/tkgrab.c b/src/tk/tkgrab.c
+index fe5cc4e..0bf8a39 100644
+--- a/src/tk/tkgrab.c
++++ b/src/tk/tkgrab.c
+@@ -498,8 +498,6 @@ TkPointerEvent(eventPtr, winPtr)
+     int appGrabbed = 0;			/* Non-zero means event is being
+ 					 * reported to an application that is
+ 					 * affected by the grab. */
+-#define ALL_BUTTONS \
+-	(Button1Mask|Button2Mask|Button3Mask|Button4Mask|Button5Mask)
+     static unsigned int state[] = {
+ 	Button1Mask, Button2Mask, Button3Mask, Button4Mask, Button5Mask
+     };
+diff --git a/src/tk/tkint.h b/src/tk/tkint.h
+index e2c7b7e..0083e51 100644
+--- a/src/tk/tkint.h
++++ b/src/tk/tkint.h
+@@ -38,6 +38,12 @@
+ #include "tclhash.h"
+ #endif
+ 
++#define META_MASK	(AnyModifier<<1)
++#define ALT_MASK	(AnyModifier<<2)
++
++#define ALL_BUTTONS \
++	(Button1Mask|Button2Mask|Button3Mask|Button4Mask|Button5Mask)
++
+ /*
+  * One of the following structures is maintained for each display
+  * containing a window managed by Tk:
+@@ -76,6 +82,9 @@ typedef struct TkDisplay {
+ 				 * retrieved from the server yet. */
+     KeySym *keySyms;		/* Array of KeySyms, returned by
+ 				 * XGetKeyboardMapping. */
++    unsigned int modeModMask;
++    unsigned int metaModMask;
++    unsigned int altModMask;
+ 
+     /*
+      * Information used by tkError.c only:
+diff --git a/src/tk/tkpixmap.c b/src/tk/tkpixmap.c
+index 3a0d9ca..753bbe1 100644
+--- a/src/tk/tkpixmap.c
++++ b/src/tk/tkpixmap.c
+@@ -41,7 +41,7 @@ static char *AtFSid = "$Header: tkPixmap.c[1.1] Mon Sep 28 14:12:35 1992 garfiel
+  * Include the xpm 3 defines for color pixmaps
+  */
+ //#include "xpmtk.h"
+-#include <xpm.h>
++#include <X11/xpm.h>
+ 
+ /*
+  * One of the following data structures exists for each bitmap that is
+diff --git a/src/tk/tkscale.c b/src/tk/tkscale.c
+index 9b6e4b2..7ea2b22 100644
+--- a/src/tk/tkscale.c
++++ b/src/tk/tkscale.c
+@@ -1317,7 +1317,7 @@ ScaleMouseProc(clientData, eventPtr)
+ 		eventPtr->xmotion.x, eventPtr->xmotion.y));
+     } else if ((eventPtr->type == ButtonPress)
+ /*	    && (eventPtr->xbutton.button == Button1) */
+-	    && (eventPtr->xbutton.state == 0)) {
++	    && ((eventPtr->xbutton.state & ALL_BUTTONS) == 0)) {
+ 	scalePtr->flags |= BUTTON_PRESSED;
+ 	SetScaleValue(scalePtr, PixelToValue(scalePtr,
+ 		eventPtr->xbutton.x, eventPtr->xbutton.y));
+diff --git a/src/tk/tkscrbar.c b/src/tk/tkscrbar.c
+index 6cec27a..bb843bc 100644
+--- a/src/tk/tkscrbar.c
++++ b/src/tk/tkscrbar.c
+@@ -974,7 +974,7 @@ ScrollbarMouseProc(clientData, eventPtr)
+ 		    eventPtr->xmotion.y));
+ 	}
+     } else if ((eventPtr->type == ButtonPress)
+-	    && (eventPtr->xbutton.state == 0)) {
++	    && ((eventPtr->xbutton.state & ALL_BUTTONS) == 0)) {
+ 	scrollPtr->pressField = scrollPtr->mouseField;
+ 	if (scrollPtr->pressField != SLIDER) {
+ 	    scrollPtr->autoRepeat = Tk_CreateTimerHandler(
+diff --git a/src/tk/tkwindow.c b/src/tk/tkwindow.c
+index 77e0b77..05029aa 100644
+--- a/src/tk/tkwindow.c
++++ b/src/tk/tkwindow.c
+@@ -360,6 +360,9 @@ GetScreen(interp, screenName, screenPtr)
+ 	    dispPtr->selectionSerial = 0;
+ 	    dispPtr->multipleAtom = None;
+ 	    dispPtr->atomInit = 0;
++	    dispPtr->modeModMask = 0;
++	    dispPtr->metaModMask = 0;
++	    dispPtr->altModMask = 0;
+ 	    dispPtr->cursorFont = None;
+ 	    dispPtr->grabWinPtr = NULL;
+ 	    dispPtr->ungrabWinPtr = NULL;
+diff --git a/src/tk/tkwm.c b/src/tk/tkwm.c
+index af974be..6e17f7e 100644
+--- a/src/tk/tkwm.c
++++ b/src/tk/tkwm.c
+@@ -349,36 +349,35 @@ TkWmMapWindow(winPtr)
+     if (wmPtr->hints.initial_state == NormalState) {
+ 	winPtr->flags |= TK_MAPPED;
+     }
+-    if (!(wmPtr->flags & WM_NEVER_MAPPED)) {
+-	return 1;
+-    }
+-    wmPtr->flags &= ~WM_NEVER_MAPPED;
++    if (wmPtr->flags & WM_NEVER_MAPPED) {
++        wmPtr->flags &= ~WM_NEVER_MAPPED;
+ 
+-    /*
+-     * This is the first time this window has ever been mapped.
+-     * Store all the window-manager-related information for the
+-     * window.
+-     */
++        /*
++         * This is the first time this window has ever been mapped.
++         * Store all the window-manager-related information for the
++         * window.
++         */
+ 
+ #ifndef X11R3
+-    if (wmPtr->titleUid == NULL) {
+-	wmPtr->titleUid = winPtr->nameUid;
+-    }
+-    if (XStringListToTextProperty(&wmPtr->titleUid, 1, &textProp)  != 0) {
+-	XSetWMName(winPtr->display, winPtr->window, &textProp);
+-	XFree((char *) textProp.value);
+-    }
++        if (wmPtr->titleUid == NULL) {
++            wmPtr->titleUid = winPtr->nameUid;
++        }
++        if (XStringListToTextProperty(&wmPtr->titleUid, 1, &textProp)  != 0) {
++            XSetWMName(winPtr->display, winPtr->window, &textProp);
++            XFree((char *) textProp.value);
++        }
+ #endif
+ 
+-    TkWmSetClass(winPtr);
+-    TkWmSetWmProtocols(winPtr);
++        TkWmSetClass(winPtr);
++        TkWmSetWmProtocols(winPtr);
+ 
+-    if (wmPtr->iconName != NULL) {
+-	XSetIconName(winPtr->display, winPtr->window, wmPtr->iconName);
+-    }
++        if (wmPtr->iconName != NULL) {
++            XSetIconName(winPtr->display, winPtr->window, wmPtr->iconName);
++        }
+ 
+-    if (wmPtr->master != None) {
+-	XSetTransientForHint(winPtr->display, winPtr->window, wmPtr->master);
++        if (wmPtr->master != None) {
++            XSetTransientForHint(winPtr->display, winPtr->window, wmPtr->master);
++        }
+     }
+ 
+     wmPtr->flags |= WM_UPDATE_SIZE_HINTS;

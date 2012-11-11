@@ -1,0 +1,13 @@
+Index: micropolis-activity/src/sim/w_sim.c
+===================================================================
+--- micropolis-activity/src/sim/w_sim.c
++++ micropolis-activity/src/sim/w_sim.c	2009-03-07 17:39:42.000000000 +0200
+@@ -1390,7 +1390,7 @@
+ 
+ int SimCmdVersion(ARGS)
+ {
+-  sprintf(interp->result, MicropolisVersion);
++  sprintf(interp->result, "%s", MicropolisVersion);
+ 
+   return (TCL_OK);
+ }

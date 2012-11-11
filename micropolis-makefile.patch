@@ -1,0 +1,194 @@
+Index: micropolis-activity-0.0.20071228/src/makefile
+===================================================================
+--- micropolis-activity-0.0.20071228.orig/src/makefile	2008-01-15 13:09:57.000000000 +0000
++++ micropolis-activity-0.0.20071228/src/makefile	2008-01-15 13:10:06.000000000 +0000
+@@ -60,6 +60,7 @@
+ # NOT APPLY TO YOU.
+ 
+ RES = ../res
++OPTFLAGS = -O2 -Wall -g
+ 
+ TARFILES = \
+ 	micropolis-activity/Micropolis \
+@@ -75,10 +76,10 @@
+ 	micropolis-activity/Micropolis.png
+ 
+ all:
+-	cd tcl ; make all
+-	cd tk ; make all
+-	cd tclx ; make all
+-	cd sim ; make all
++	cd tcl ; make OPTFLAGS="$(OPTFLAGS)" all
++	cd tk ; make OPTFLAGS="$(OPTFLAGS)" all
++	cd tclx ; make OPTFLAGS="$(OPTFLAGS)" all
++	cd sim ; make OPTFLAGS="$(OPTFLAGS)" all
+ 
+ clean:
+ 	rm -f Micropolis.tgz
+Index: micropolis-activity-0.0.20071228/src/tcl/makefile
+===================================================================
+--- micropolis-activity-0.0.20071228.orig/src/tcl/makefile	2008-01-15 13:09:57.000000000 +0000
++++ micropolis-activity-0.0.20071228/src/tcl/makefile	2008-01-15 13:10:06.000000000 +0000
+@@ -24,10 +24,9 @@
+ 
+ TCL_LIBRARY =	/usr/local/lib/tcl
+ 
+-CC =		gcc
+-
+-CFLAGS =	-O3 -I. -DTCL_LIBRARY=\"${TCL_LIBRARY}\" -DIS_LINUX
+-#CFLAGS =	-g -I. -DTCL_LIBRARY=\"${TCL_LIBRARY}\" -DIS_LINUX
++CC = gcc
++OPTFLAGS = -O3
++CFLAGS = $(OPTFLAGS) -I. -DTCL_LIBRARY=\"${TCL_LIBRARY}\" -DIS_LINUX
+ 
+ GENERIC_OBJS = \
+ 	regexp.o \
+Index: micropolis-activity-0.0.20071228/src/tclx/config.mk
+===================================================================
+--- micropolis-activity-0.0.20071228.orig/src/tclx/config.mk	2008-01-15 13:09:57.000000000 +0000
++++ micropolis-activity-0.0.20071228/src/tclx/config.mk	2008-01-15 13:10:06.000000000 +0000
+@@ -62,8 +62,7 @@
+ 
+ CC=gcc
+ 
+-OPTIMIZE_FLAG=-O3 -DIS_LINUX
+-#OPTIMIZE_FLAG=-g -DIS_LINUX
++TARGET_FLAG=-DIS_LINUX
+ 
+ #------------------------------------------------------------------------------
+ # Stripping of the final tclshell binary.  Specify `true' if the binary is to
+Index: micropolis-activity-0.0.20071228/src/tclx/makefile
+===================================================================
+--- micropolis-activity-0.0.20071228.orig/src/tclx/makefile	2008-01-15 13:09:57.000000000 +0000
++++ micropolis-activity-0.0.20071228/src/tclx/makefile	2008-01-15 13:10:06.000000000 +0000
+@@ -30,8 +30,9 @@
+ MADE.FILES=ucbsrc/made.tmp ossupp/made.tmp src/made.tmp
+ TKMADE.FILES=tkucbsrc/made.tmp
+ 
+-CFLAGS= $(OPTIMIZE_FLAG) $(XCFLAGS) -I$(TCL_UCB_DIR) $(MEM_DEBUG_FLAGS) \
+-        $(SYS_DEP_FLAGS)
++OPTFLAGS= -O3
++CFLAGS= $(OPTFLAGS) $(TARGET_FLAG) $(XCFLAGS) -I$(TCL_UCB_DIR) \
++	$(MEM_DEBUG_FLAGS) $(SYS_DEP_FLAGS)
+ 
+ #------------------------------------------------------------------------------
+ 
+@@ -45,10 +46,10 @@
+ tcl: TCLX_MAKES
+ 
+ TCLX_MAKES: libtcl.a
+-	cd ucbsrc;    $(MAKE) -$(MAKEFLAGS) all
+-	cd ossupp;    $(MAKE) -$(MAKEFLAGS) all
+-	cd tclsrc;    $(MAKE) -$(MAKEFLAGS) all
+-	cd src;       $(MAKE) -$(MAKEFLAGS) all
++	cd ucbsrc;    $(MAKE) OPTFLAGS="$(OPTFLAGS)" -$(MAKEFLAGS) all
++	cd ossupp;    $(MAKE) OPTFLAGS="$(OPTFLAGS)" -$(MAKEFLAGS) all
++	cd tclsrc;    $(MAKE) OPTFLAGS="$(OPTFLAGS)" -$(MAKEFLAGS) all
++	cd src;       $(MAKE) OPTFLAGS="$(OPTFLAGS)" -$(MAKEFLAGS) all
+ 
+ 
+ # Copy the UCB libtcl.a file from where it was built.  Force the other
+Index: micropolis-activity-0.0.20071228/src/tclx/ossupp/makefile
+===================================================================
+--- micropolis-activity-0.0.20071228.orig/src/tclx/ossupp/makefile	2008-01-15 13:10:03.000000000 +0000
++++ micropolis-activity-0.0.20071228/src/tclx/ossupp/makefile	2008-01-15 14:01:05.000000000 +0000
+@@ -22,8 +22,9 @@
+ 
+ #------------------------------------------------------------------------------
+ 
+-CFLAGS=$(OPTIMIZE_FLAG) $(XCFLAGS) -I../$(TCL_UCB_DIR) $(MEM_DEBUG_FLAGS) \
+-  $(SYS_DEP_FLAGS) $(SUPPORT_FLAGS)
++OPTFLAGS=-O3
++CFLAGS=$(TARGET_FLAG) $(OPTFLAGS) $(XCFLAGS) -I../$(TCL_UCB_DIR) \
++	$(MEM_DEBUG_FLAGS) $(SYS_DEP_FLAGS) $(SUPPORT_FLAGS)
+ 
+ #------------------------------------------------------------------------------
+ 
+Index: micropolis-activity-0.0.20071228/src/tclx/src/makefile
+===================================================================
+--- micropolis-activity-0.0.20071228.orig/src/tclx/src/makefile	2008-01-15 13:09:57.000000000 +0000
++++ micropolis-activity-0.0.20071228/src/tclx/src/makefile	2008-01-15 13:10:06.000000000 +0000
+@@ -25,7 +25,8 @@
+ 
+ #------------------------------------------------------------------------------
+ 
+-CFLAGS= $(OPTIMIZE_FLAG) $(XCFLAGS) -I../$(TCL_UCB_DIR) $(MEM_DEBUG_FLAGS) \
++OPTFLAGS= -O3
++CFLAGS= $(TARGET_FLAG) $(OPTFLAGS) $(XCFLAGS) -I../$(TCL_UCB_DIR) $(MEM_DEBUG_FLAGS) \
+         $(SYS_DEP_FLAGS)
+ 
+ #------------------------------------------------------------------------------
+Index: micropolis-activity-0.0.20071228/src/tclx/tksrc/makefile
+===================================================================
+--- micropolis-activity-0.0.20071228.orig/src/tclx/tksrc/makefile	2008-01-15 13:09:57.000000000 +0000
++++ micropolis-activity-0.0.20071228/src/tclx/tksrc/makefile	2008-01-15 13:10:06.000000000 +0000
+@@ -23,7 +23,8 @@
+ 
+ #------------------------------------------------------------------------------
+ 
+-CFLAGS= $(OPTIMIZE_FLAG) $(XCFLAGS) -I$(TCL_UCB_DIR) $(MEM_DEBUG_FLAGS)
++OPTFLAGS= -O3
++CFLAGS= $(TARGET_FLAG) $(OPTFLAGS) $(XCFLAGS) -I$(TCL_UCB_DIR) $(MEM_DEBUG_FLAGS)
+ 
+ #------------------------------------------------------------------------------
+ 
+Index: micropolis-activity-0.0.20071228/src/tclx/tkucbsrc/makefile
+===================================================================
+--- micropolis-activity-0.0.20071228.orig/src/tclx/tkucbsrc/makefile	2008-01-15 13:09:57.000000000 +0000
++++ micropolis-activity-0.0.20071228/src/tclx/tkucbsrc/makefile	2008-01-15 13:10:06.000000000 +0000
+@@ -23,7 +23,8 @@
+ 
+ #------------------------------------------------------------------------------
+ 
+-CFLAGS= $(OPTIMIZE_FLAG) $(XCFLAGS) -I../src -I../$(TCL_TK_DIR) \
++OPTFLAGS= -O3
++CFLAGS= $(TARGET_FLAG) $(OPTFLAGS) $(XCFLAGS) -I../src -I../$(TCL_TK_DIR) \
+         -I../$(TCL_UCB_DIR) -I$(XHOME)/include \
+ 	$(MEM_DEBUG_FLAGS) $(SYS_DEP_FLAGS) \
+         -DTK_VERSION=\"2.2/\"
+Index: micropolis-activity-0.0.20071228/src/tclx/ucbsrc/makefile
+===================================================================
+--- micropolis-activity-0.0.20071228.orig/src/tclx/ucbsrc/makefile	2008-01-15 13:09:57.000000000 +0000
++++ micropolis-activity-0.0.20071228/src/tclx/ucbsrc/makefile	2008-01-15 13:10:06.000000000 +0000
+@@ -24,8 +24,9 @@
+ 
+ #------------------------------------------------------------------------------
+ 
+-CFLAGS=$(OPTIMIZE_FLAG) $(XCFLAGS) -I../$(TCL_UCB_DIR) $(MEM_DEBUG_FLAGS) \
+-  $(SYS_DEP_FLAGS)
++OPTFLAGS=-O3
++CFLAGS=$(TARGET_FLAG) $(OPTFLAGS) $(XCFLAGS) -I../$(TCL_UCB_DIR) \
++	$(MEM_DEBUG_FLAGS) $(SYS_DEP_FLAGS)
+ 
+ #------------------------------------------------------------------------------
+ 
+Index: micropolis-activity-0.0.20071228/src/tk/makefile
+===================================================================
+--- micropolis-activity-0.0.20071228.orig/src/tk/makefile	2008-01-15 13:09:57.000000000 +0000
++++ micropolis-activity-0.0.20071228/src/tk/makefile	2008-01-15 13:10:06.000000000 +0000
+@@ -28,9 +28,8 @@
+ #
+ 
+ CC		= gcc
+-
+-CFLAGS		= -I. -I$(XINCLUDE) -I$(TCL_DIR) -O3 -DTK_VERSION=\"2.3\" -DUSE_XPM3 -DIS_LINUX
+-#CFLAGS		= -I. -I$(XINCLUDE) -I$(TCL_DIR) -g -DTK_VERSION=\"2.3\" -DUSE_XPM3 -DIS_LINUX
++OPTFLAGS  	= -O3
++CFLAGS		= $(OPTFLAGS) -I. -I$(XINCLUDE) -I$(TCL_DIR) -DTK_VERSION=\"2.3\" -DUSE_XPM3 -DIS_LINUX
+ 
+ TCL_DIR		= ../tcl
+ XINCLUDE	= /usr/include/X11
+Index: micropolis-activity-0.0.20071228/src/tclx/ossupp/makefile.dvx
+===================================================================
+--- micropolis-activity-0.0.20071228.orig/src/tclx/ossupp/makefile.dvx	2008-01-15 13:09:57.000000000 +0000
++++ micropolis-activity-0.0.20071228/src/tclx/ossupp/makefile.dvx	2008-01-15 13:10:06.000000000 +0000
+@@ -22,7 +22,8 @@
+ 
+ #------------------------------------------------------------------------------
+ 
+-CFLAGS=$(OPTIMIZE_FLAG) $(XCFLAGS) -I../$(TCL_UCB_DIR) $(MEM_DEBUG_FLAGS) \
++OPTFLAGS= -O3
++CFLAGS=$(TARGET_FLAG) $(OPTFLAGS) $(XCFLAGS) -I../$(TCL_UCB_DIR) $(MEM_DEBUG_FLAGS) \
+  -DTCL_HAS_TM_ZONE $(SUPPORT_FLAGS)
+ 
+ #------------------------------------------------------------------------------
