@@ -114,3 +114,56 @@ rm -rf %{buildroot}
 %{_iconsdir}/%{name}.png
 %{_liconsdir}/%{name}.png
 %{_datadir}/applications/mandriva-%{name}.desktop
+
+
+%changelog
+* Fri Dec 10 2010 Oden Eriksson <oeriksson@mandriva.com> 4.0-10mdv2011.0
++ Revision: 620326
+- the mass rebuild of 2010.0 packages
+
+* Mon Sep 14 2009 Thierry Vignaud <tv@mandriva.org> 4.0-9mdv2010.0
++ Revision: 439802
+- rebuild
+
+* Sat Mar 07 2009 Anssi Hannula <anssi@mandriva.org> 4.0-8mdv2009.1
++ Revision: 351774
+- fix printf format string (printf-format.patch)
+- rebuild
+
+  + Oden Eriksson <oeriksson@mandriva.com>
+    - lowercase ImageMagick
+
+  + Pixel <pixel@mandriva.com>
+    - rpm filetriggers deprecates update_menus/update_scrollkeeper/update_mime_database/update_icon_cache/update_desktop_database/post_install_gconf_schemas
+
+* Sun Mar 02 2008 Anssi Hannula <anssi@mandriva.org> 4.0-7mdv2008.1
++ Revision: 177743
+- sync new fixes from Michael Gernoth's git repo
+
+* Sun Jan 27 2008 Anssi Hannula <anssi@mandriva.org> 4.0-6mdv2008.1
++ Revision: 158681
+- more fixes from Michael Gernoth
+- re-enable air crash disaster
+
+* Tue Jan 22 2008 Anssi Hannula <anssi@mandriva.org> 4.0-5mdv2008.1
++ Revision: 156365
+- update buildrequires for backportability
+
+* Mon Jan 21 2008 Anssi Hannula <anssi@mandriva.org> 4.0-4mdv2008.1
++ Revision: 155569
+- fix start script on lib64 (Jean-Claude Stiegler)
+
+* Sun Jan 20 2008 Anssi Hannula <anssi@mandriva.org> 4.0-3mdv
++ Revision: 155307
+- fixes from Michael Gernoth's git repository:
+  o fix typo in crime alert
+  o fix modifier problems (like NumLock) by ignoring hateMod
+
+* Sun Jan 20 2008 Anssi Hannula <anssi@mandriva.org> 4.0-2mdv2008.1
++ Revision: 155210
+- fix some 64bit pointer warnings
+
+* Sun Jan 20 2008 Anssi Hannula <anssi@mandriva.org> 4.0-1mdv2008.1
++ Revision: 155188
+- initial Mandriva release
+
