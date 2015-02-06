@@ -3,7 +3,7 @@ Name:		micropolis
 # activity/activity.info = 7
 # src/sim/sim.c and about = 4.0
 Version:	4.0
-Release:	11
+Release:	12
 License:	GPLv3+
 Group:		Games/Strategy
 Url:		http://www.donhopkins.com/home/micropolis/
