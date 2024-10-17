@@ -6,7 +6,7 @@ Version:	4.0
 Release:	12
 License:	GPLv3+
 Group:		Games/Strategy
-Url:		http://www.donhopkins.com/home/micropolis/
+Url:		https://www.donhopkins.com/home/micropolis/
 # Also see http://dev.laptop.org/git?p=projects/micropolis-activity
 Source0:	http://www.donhopkins.com/home/micropolis/micropolis-activity-source.tgz
 # Lots of fixes from
