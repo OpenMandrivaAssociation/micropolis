@@ -20,6 +20,7 @@ Patch2:		micropolis-makefile.patch
 # harmless corner cases, but this code is so old I don't take any chances.
 Patch3:		micropolis-64bit-warns.patch
 Patch4:		micropolis-printf-format.patch
+BuildRequires:	make
 BuildRequires:	bison
 BuildRequires:	imagemagick
 BuildRequires:	pkgconfig(sdl)
